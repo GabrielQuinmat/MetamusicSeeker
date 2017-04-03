@@ -7,7 +7,8 @@ import java.io.Serializable;
  */
 public class Song implements Serializable {
     private String Path;
-    private double[] amplitudes;
+    private double[] amplitudesR;
+    private double[] amplitudesL;
     private double[] fftR;
     private double[] fftL;
 
@@ -19,12 +20,20 @@ public class Song implements Serializable {
         Path = path;
     }
 
-    public double[] getAmplitudes() {
-        return amplitudes;
+    public double[] getAmplitudesR() {
+        return amplitudesR;
     }
 
-    public void setAmplitudes(double[] amplitudes) {
-        this.amplitudes = amplitudes;
+    public void setAmplitudesR(double[] amplitudesR) {
+        this.amplitudesR = amplitudesR;
+    }
+
+    public double[] getAmplitudesL() {
+        return amplitudesL;
+    }
+
+    public void setAmplitudesL(double[] amplitudesL) {
+        this.amplitudesL = amplitudesL;
     }
 
     public double[] getFftR() {

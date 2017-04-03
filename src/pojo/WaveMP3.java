@@ -1,4 +1,4 @@
-package methodclasses;
+package pojo;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
