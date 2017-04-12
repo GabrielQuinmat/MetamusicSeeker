@@ -1,11 +1,14 @@
 package pojo;
 
+import methodclasses.ConversionFormatter;
+
 import javax.naming.directory.SearchResult;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
+import java.util.HashMap;
 
 /**
  * Created by Gabo on 31/03/2017.
@@ -20,12 +23,19 @@ public class WaveSound implements Serializable{
     private AudioFormat format;
     private double durationSec;
     private double durationMSec;
+    private File wavFile;
 
-    public WaveSound() {
+    public WaveSound(String path) {
+        wavFile = new File(path);
+    }
+
+    public WaveSound(WaveMP3 mp3File){
+        wavFile = ConversionFormatter.convertMP3toWAV(mp3File.file);
+        extractAmplitudeFromFile();
     }
 
 
-    public double[] extractAmplitudeFromFile(File wavFile) {
+    public double[] extractAmplitudeFromFile() {
         try {
             // create file input stream
             FileInputStream fis = new FileInputStream(wavFile);
@@ -125,6 +135,20 @@ public class WaveSound implements Serializable{
         // System.out.println("PCM Returned===============" +
         // audioData.length);
         return audioData;
+    }
+
+
+    public HashMap<String, double[]> separateChannels() {
+        HashMap<String, double[]> channelMap = new HashMap<>();
+        double[] channelL = new double[audioData.length / 2];
+        double[] channelR = new double[audioData.length / 2];
+        for (int i = 0, x = 0; i < audioData.length; i += 2, x++) {
+            channelL[x] = audioData[i];
+            channelR[x] = audioData[i + 1];
+        }
+        channelMap.put("Channel L", channelL);
+        channelMap.put("Channel R", channelR);
+        return channelMap;
     }
 
     public byte[] getAudioBytes() {

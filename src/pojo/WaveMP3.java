@@ -14,14 +14,27 @@ public class WaveMP3 {
     File file;
     AudioInputStream input;
     AudioInputStream din;
+    private WaveSound waveSound;
 
-    public AudioInputStream getAudioData(File file) throws IOException, UnsupportedAudioFileException {
-        this.file = file;
-        input = AudioSystem.getAudioInputStream(file);
-        AudioFormat baseFormat = input.getFormat();
-        AudioFormat decodedFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(),
-                16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
-        din = AudioSystem.getAudioInputStream(decodedFormat, input);
+    public WaveMP3(String path) {
+        file = new File(path);
+    }
+
+    public AudioInputStream getAudioData() {
+        try {
+            input = AudioSystem.getAudioInputStream(file);
+            AudioFormat baseFormat = input.getFormat();
+            AudioFormat decodedFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(),
+                    16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
+            din = AudioSystem.getAudioInputStream(decodedFormat, input);
+            waveSound = new WaveSound(file.getPath());
+            waveSound.extractAmplitudeDataFromAudioInputStream(din);
+        } catch (UnsupportedAudioFileException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return din;
     }
+
 }

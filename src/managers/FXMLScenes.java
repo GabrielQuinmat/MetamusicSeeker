@@ -11,7 +11,7 @@ public enum FXMLScenes {
     MAIN {
         @Override
         String getFXMLName() {
-            return "fxmls/mainScene.fxml";
+            return "/fxmls/mainScene.fxml";
         }
 
         @Override
@@ -21,12 +21,17 @@ public enum FXMLScenes {
 
         @Override
         String getStylesheet() {
-            return "stylesheets/mainStyle.css";
+            return "/stylesheets/mainStyle.css";
         }
 
         @Override
         public String getTitle() {
             return "Meta-Music Seeker";
+        }
+
+        @Override
+        StageStyle getStageStyle() {
+            return StageStyle.DECORATED;
         }
     }, PROGRESS {
         @Override
@@ -48,10 +53,15 @@ public enum FXMLScenes {
         public String getTitle() {
             return "";
         }
+
+        @Override
+        StageStyle getStageStyle() {
+            return StageStyle.UNDECORATED;
+        }
     }, SPECTRUM {
         @Override
         String getFXMLName() {
-            return "fxmls/spectrumScene.fxml";
+            return "/fxmls/spectrumScene.fxml";
         }
 
         @Override
@@ -61,12 +71,17 @@ public enum FXMLScenes {
 
         @Override
         String getStylesheet() {
-            return "stylesheets/spectrumStyle.css";
+            return "/stylesheets/spectrumStyle.css";
         }
 
         @Override
         public String getTitle() {
             return "Analizador Espectral";
+        }
+
+        @Override
+        StageStyle getStageStyle() {
+            return StageStyle.DECORATED;
         }
     }, SPECTRUM_MAXIMIZED {
         @Override
@@ -88,10 +103,42 @@ public enum FXMLScenes {
         public String getTitle() {
             return "";
         }
+
+        @Override
+        StageStyle getStageStyle() {
+            return StageStyle.DECORATED;
+        }
+    }, ALERT_DIALOG {
+        @Override
+        String getFXMLName() {
+            return "/fxmls/alertDialog.fxml";
+        }
+
+        @Override
+        Modality getModality() {
+            return Modality.WINDOW_MODAL;
+        }
+
+        @Override
+        String getStylesheet() {
+            return "/stylesheets/dialogStyle.css";
+        }
+
+        @Override
+        public String getTitle() {
+            return null;
+        }
+
+        @Override
+        StageStyle getStageStyle() {
+            return StageStyle.UNDECORATED;
+        }
     };
 
     abstract String getFXMLName();
     abstract Modality getModality();
     abstract String getStylesheet();
     public abstract String getTitle();
+    abstract StageStyle getStageStyle();
+
 }

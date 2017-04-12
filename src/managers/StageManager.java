@@ -1,11 +1,13 @@
 package managers;
 
+import controllers.AlertDialogController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import stages.AlertDialog;
 
 import java.io.IOException;
 import java.net.URL;
@@ -33,7 +35,26 @@ public class StageManager extends Application{
         primaryStage.initModality(fscene.getModality());
         primaryStage.setTitle(fscene.getTitle());
         primaryStage.show();
+    }
 
+
+    public void dialogStart(FXMLScenes fscene,String message){
+        Stage stage = new Stage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fscene.getFXMLName()));
+        Parent root = null;
+        try {
+            root = loader.load();
+            AlertDialogController controller = loader.getController();
+            controller.setMessage(message);
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource(fscene.getStylesheet()).toExternalForm());
+            stage.setScene(scene);
+            stage.initModality(fscene.getModality());
+            stage.setTitle(fscene.getTitle());
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /*
@@ -42,10 +63,12 @@ public class StageManager extends Application{
         Parent root;
         try {
             root = FXMLLoader.load(getClass().getResource(fsceneTo.getFXMLName()));
+            setUserAgentStylesheet(STYLESHEET_CASPIAN);
             Scene scene = prepareScene(root);
             stage.setScene(scene);
             stage.sizeToScene();
             stage.centerOnScreen();
+            stage.initStyle(fsceneTo.getStageStyle());
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

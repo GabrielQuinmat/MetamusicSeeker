@@ -1,0 +1,11 @@
+.chart-plot-background{
+    -fx-background-color: BLACK;
+}
+
+.chart-series-line {
+    -fx-stroke-width: 1px;
+}
+
+.chart-legend-item-symbol{
+   -fx-background-radius: 0;
+}
