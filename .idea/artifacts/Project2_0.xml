@@ -1,0 +1,21 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="Project2.0">
+    <output-path>$PROJECT_DIR$/out/artifacts/Project2_0</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="stages.Main" />
+        <option name="description" value="" />
+        <option name="htmlPlaceholderId" value="" />
+        <option name="nativeBundle" value="all" />
+        <option name="title" value="MetaMusic Seeker" />
+        <option name="vendor" value="" />
+        <option name="version" value="" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="Project2_0.jar">
+        <element id="module-output" name="Project2.0" />
+      </element>
+    </root>
+  </artifact>
+</component>

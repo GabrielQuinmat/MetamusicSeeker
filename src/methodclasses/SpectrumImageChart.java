@@ -32,6 +32,8 @@ public class SpectrumImageChart {
     public static final double HORIZONTAL_MARKS = 32;
     public static final double VERTICAL_MARKS = 32;
 
+    public static final double MAX_BINAURAL_FREQUENCY = 1000;
+
     private WritableImage image;
     private Canvas canvas;
     private PixelWriter pixelWriter;
@@ -55,8 +57,6 @@ public class SpectrumImageChart {
 
     public WritableImage prepareImage(String title, String labelX, String labelY) {
         progress = new SimpleDoubleProperty(0);
-//        ProgressDialog progressDialog = new ProgressDialog();
-//        progressDialog.start(null);
         image = new WritableImage((int) WIDTH, (int) HEIGTH);
         pixelWriter = image.getPixelWriter();
         fillBlank();
@@ -142,7 +142,23 @@ public class SpectrumImageChart {
         paintFFT(fftCofs, sliceH, sliceV, windowSize / 2, nWindows, maxPower);
         setGridCanvas();
         canvas.snapshot(null, (WritableImage) image);
-        progress.setValue(1);
+        progress.setValue(0.7);
+        return (WritableImage) image;
+    }
+
+    public WritableImage drawSpectrumZoomed(Image image, double[] fftCofs, int windowSize, double windowTilMaxFreq,
+                                            int milisecs) throws Exception {
+        double maxFreq = MAX_BINAURAL_FREQUENCY,
+                nWindows = fftCofs.length / (windowSize * 0.5),
+                maxPower = getMaxFromArray(fftCofs);
+        int sliceV = (int) Math.floor(BOX_HEIGTH / windowTilMaxFreq),
+                sliceH = (int) Math.ceil(BOX_WIDTH / nWindows);
+        setAxisNumeration(image, maxFreq, milisecs);
+        setMarksCanvas();
+        paintFFT(fftCofs, sliceH, sliceV, windowSize / 2, nWindows, maxPower);
+        setGridCanvas();
+        canvas.snapshot(null, (WritableImage) image);
+        progress.setValue(0.7);
         return (WritableImage) image;
     }
 
@@ -153,7 +169,7 @@ public class SpectrumImageChart {
             power = arr[index];
             Color color = getColorFFT(power, zCriteria);
             gc.setFill(Paint.valueOf(color.toString()));
-            gc.fillRect(widthX, heigthY, pixelsPerH, pixelsPerV);
+            gc.fillRect(widthX, heigthY - pixelsPerV, pixelsPerH, pixelsPerV);
             heigthY -= pixelsPerV;
             if (heigthY <= BOX_HEIGTH_INIT || i >= vCriteria) {
                 x++;

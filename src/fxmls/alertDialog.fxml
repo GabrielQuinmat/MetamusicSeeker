@@ -5,8 +5,9 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
-
-<AnchorPane prefHeight="122.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AlertDialogController">
+<AnchorPane maxHeight="122.0" maxWidth="300.0" prefHeight="122.0" prefWidth="300.0"
+            xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.AlertDialogController">
    <children>
       <Button fx:id="button" layoutX="110.0" layoutY="87.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="80.0" text="Aceptar" />
       <Text fx:id="text" layoutX="14.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="271.13671875">

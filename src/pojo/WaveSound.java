@@ -2,7 +2,6 @@ package pojo;
 
 import methodclasses.ConversionFormatter;
 
-import javax.naming.directory.SearchResult;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -79,7 +78,9 @@ public class WaveSound implements Serializable{
 
     public double[] extractAmplitudeDataFromAudioInputStream(AudioInputStream audioInputStream) {
         format = audioInputStream.getFormat();
-        audioBytes = new byte[(int) (audioInputStream.getFrameLength() * format.getFrameSize())];
+        int MAXSIZE = 54000000;
+        audioBytes = new byte[((int) (audioInputStream.getFrameLength() * format.getFrameSize()) > MAXSIZE) ? MAXSIZE
+                : (int) (audioInputStream.getFrameLength() * format.getFrameSize())];
         // calculate durations
         durationMSec = (long) ((audioInputStream.getFrameLength() * 1000) / audioInputStream.getFormat().getFrameRate());
         durationSec = durationMSec / 1000.0;
@@ -139,16 +140,45 @@ public class WaveSound implements Serializable{
 
 
     public HashMap<String, double[]> separateChannels() {
+        int size, sizeFor, frameSize = getFormat().getFrameSize();
+        size = audioData.length / 2;
+        sizeFor = audioData.length;
         HashMap<String, double[]> channelMap = new HashMap<>();
-        double[] channelL = new double[audioData.length / 2];
-        double[] channelR = new double[audioData.length / 2];
-        for (int i = 0, x = 0; i < audioData.length; i += 2, x++) {
+        double[] channelL = new double[size];
+        double[] channelR = new double[size];
+        for (int i = 0, x = 0; i < sizeFor; i += 2, x++) {
+//            for (int j = i; j < i+frameSize; j++) {
+//                if ((j-i) < ((frameSize)/2))
+//                channelL[x] = audioData[j];
+//                else
+//                channelR[x] = audioData[j];
+//            }
             channelL[x] = audioData[i];
             channelR[x] = audioData[i + 1];
         }
         channelMap.put("Channel L", channelL);
         channelMap.put("Channel R", channelR);
         return channelMap;
+    }
+
+    public void DataFormatted(double[] data, String title) {
+        try {
+            PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(
+                    new FileOutputStream(title), "UTF-8"), true);
+            for (int i = 0, c = 0, win = 0; i < data.length; i++, c++, win++) {
+                if (c < 5) {
+                    printWriter.print(i + ": " + String.format("%,.3f ", data[i]) + "      \t");
+                } else {
+                    printWriter.print(i + ": " + String.format("%,.3f ", data[i]));
+                    printWriter.println();
+                    c = -1;
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public byte[] getAudioBytes() {

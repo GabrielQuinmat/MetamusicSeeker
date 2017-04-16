@@ -136,24 +136,34 @@ public class FourierPerformer {
          * se mandará un TRUE. Que será la confirmación de que el archivo de audio es
          * metamúsica.*/
         Set<Integer> keys = mapFreq.keySet();
-        if (keys.iterator().hasNext()) {
+        int criteria = Math.round((float) (averageDB * 0.05));
+        while (keys.iterator().hasNext()) {
             int n = keys.iterator().next();
-            for (int i = n, x = 0, y = 0; i < arr1.length; i += WINDOW / 2) {
+            boolean first = true;
+            for (int i = n, x = 0, y = 0, xOld = 0, yOld = 0; i < arr1.length; i += WINDOW / 2) {
                 for (int j = 0; j < positionNeed; j++) {
                     x += (int) arr1[i + j];
                     y += (int) arr2[i + j];
                 }
                 x /= positionNeed;
                 y /= positionNeed;
-                if (!((y - averageDB) <= (x + averageDB))) {
+                boolean dif = (!first) ? !(Math.abs(x - xOld) <= criteria && Math.abs(y - yOld) <= criteria) : false;
+                if ((!(Math.abs(y - x) <= (criteria)) || dif) && y != 0) {
                     mapFreq.remove(n);
+                    break;
+                } else {
+                    xOld = x;
+                    yOld = y;
                 }
+                x = 0;
+                y = 0;
+                first = false;
             }
         }
         return mapFreq.isEmpty();
     }
 
-    private int getPositionNeed() {
+    public int getPositionNeed() {
         return (int) Math.ceil((double) 40 / (waveData.getFormat().getSampleRate() / WINDOW));
     }
 
@@ -168,6 +178,7 @@ public class FourierPerformer {
         * en potencia similares.
         * 3. Si cumplen con un rango similar de DB, se ingresan las posiciones de los arreglos que
         * concordaron en el mapa.*/
+        int criteria = Math.round((float) (averageDB * 0.05));
         HashMap<Integer, Integer> freqPosition = new HashMap<>();
         for (int i = 0, x = 0, y = 0; i < maxPosition; i++) {
             for (int j = 0; j < positionNeed; j++) {
@@ -176,9 +187,11 @@ public class FourierPerformer {
             }
             x /= positionNeed;
             y /= positionNeed;
-            if ((y - averageDB) <= (x + averageDB)) {
+            if (Math.abs(y - x) <= criteria && y != 0) {
                 freqPosition.put(i, i + positionNeed);
             }
+            x = 0;
+            y = 0;
         }
         return freqPosition;
     }
@@ -203,12 +216,12 @@ public class FourierPerformer {
     private double[] convertToDB(double[] arr) {
         double[] newArr = new double[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            newArr[i] = Math.log10(arr[i]);
+            newArr[i] = (arr[i] != 0) ? 20 * Math.log10(arr[i]) : 0;
         }
         return newArr;
     }
 
-    private int getMaxPosition() {
+    public int getMaxPosition() {
         return (int) Math.ceil((double) MAX_FREQUENCY / (waveData.getFormat().getSampleRate() / (double) WINDOW));
     }
 
@@ -222,9 +235,9 @@ public class FourierPerformer {
                         + " segundos").append("\n");
             }
             if (c < 5) {
-                stringBuilder.append(i + ": " + String.format("%,.3f", coffs[i]) + "      \t");
+                stringBuilder.append(i + ": " + String.format("%,.3f ", coffs[i]) + "      \t");
             } else {
-                stringBuilder.append(i + ": " + String.format("%,.3f", coffs[i])).append("\n");
+                stringBuilder.append(i + ": " + String.format("%,.3f ", coffs[i])).append("\n");
                 c = -1;
             }
         }
@@ -236,4 +249,5 @@ public class FourierPerformer {
             e.printStackTrace();
         }
     }
+
 }

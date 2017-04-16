@@ -1,6 +1,9 @@
 package pojo;
 
+import javafx.scene.image.Image;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -12,8 +15,19 @@ public class Song implements Serializable {
     private double[] amplitudesL;
     private double[] ampRedL;
     private double[] ampRedR;
+    private double[] fftR;
+    private double[] fftL;
+    private WaveMP3 waveMP3;
+    private WaveSound waveSound;
+    private String sonfInfo;
+    private ArrayList<Image> images;
 
     private static final int reduceCriteria = 2000;
+
+    public ArrayList<Image> getImages() {
+        return images;
+    }
+
 
     public double[] getAmpRedL() {
         return ampRedL;
@@ -23,17 +37,11 @@ public class Song implements Serializable {
         return ampRedR;
     }
 
-    private double[] fftR;
-    private double[] fftL;
-    private WaveMP3 waveMP3;
-    private WaveSound waveSound;
-
-    private String sonfInfo;
-
 
 
     public Song(String path) {
         Path = path;
+        images = new ArrayList<>();
         if (path.endsWith(".mp3"))
             waveMP3 = new WaveMP3(Path);
         else

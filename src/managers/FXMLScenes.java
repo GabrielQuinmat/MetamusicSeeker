@@ -36,7 +36,7 @@ public enum FXMLScenes {
     }, PROGRESS {
         @Override
         String getFXMLName() {
-            return "fxmls/ProgressDialog.fxml";
+            return "/fxmls/ProgressDialog.fxml";
         }
 
         @Override
@@ -46,7 +46,7 @@ public enum FXMLScenes {
 
         @Override
         String getStylesheet() {
-            return "stylesheets/dialogStyle.css";
+            return "/stylesheets/dialogStyle.css";
         }
 
         @Override
@@ -86,22 +86,47 @@ public enum FXMLScenes {
     }, SPECTRUM_MAXIMIZED {
         @Override
         String getFXMLName() {
-            return null;
+            return "/fxmls/spectrumMaximizedSpectrum.fxml";
         }
 
         @Override
         Modality getModality() {
-            return null;
+            return Modality.NONE;
         }
 
         @Override
         String getStylesheet() {
-            return null;
+            return "/stylesheets/spectrumStyle.css";
         }
 
         @Override
         public String getTitle() {
-            return "";
+            return "Espectograma Aumentado";
+        }
+
+        @Override
+        StageStyle getStageStyle() {
+            return StageStyle.DECORATED;
+        }
+    }, WAVEFORM_MAXIMIZED {
+        @Override
+        String getFXMLName() {
+            return "/fxmls/spectrumMaximized.fxml";
+        }
+
+        @Override
+        Modality getModality() {
+            return Modality.NONE;
+        }
+
+        @Override
+        String getStylesheet() {
+            return "/stylesheets/spectrumStyle.css";
+        }
+
+        @Override
+        public String getTitle() {
+            return "Forma de Onda Aumentada";
         }
 
         @Override
@@ -116,7 +141,7 @@ public enum FXMLScenes {
 
         @Override
         Modality getModality() {
-            return Modality.WINDOW_MODAL;
+            return Modality.APPLICATION_MODAL;
         }
 
         @Override

@@ -1,25 +1,30 @@
 package controllers;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import managers.FXMLScenes;
+import managers.StageManager;
 import methodclasses.FourierPerformer;
+import methodclasses.SceneMaster;
 import methodclasses.SpectrumImageChart;
 import pojo.Song;
-import pojo.WaveMP3;
-import pojo.WaveSound;
 
 import javax.swing.*;
 import java.net.URL;
@@ -42,6 +47,9 @@ public class SpectrumController implements Initializable{
     private double[] rCoffs;
     SpectrumImageChart spectrumImageChart;
 
+    MenuItem item1 = new MenuItem("Zoom en la Región de Interes");
+    MenuItem item2 = new MenuItem("Abrir Gráfica en Nueva Ventana");
+
 
     @FXML
     ImageView spectrumImage;
@@ -63,9 +71,11 @@ public class SpectrumController implements Initializable{
                             lCoffs = fourierPerformer.performFFT(song.getAmplitudesL());
                             rCoffs = fourierPerformer.performFFT(song.getAmplitudesR());
 
+                            song.setFftL(lCoffs);
+                            song.setFftR(rCoffs);
 
-                            fourierPerformer.FFTFormatted(lCoffs, "FFT Left");
-                            fourierPerformer.FFTFormatted(rCoffs, "FFT Right");
+                            fourierPerformer.FFTFormatted(lCoffs, "FFT Left.txt");
+                            fourierPerformer.FFTFormatted(rCoffs, "FFT Right.txt");
                         }
                         return null;
                     }
@@ -106,6 +116,7 @@ public class SpectrumController implements Initializable{
                                 e.printStackTrace();
                             }
                             spectrumImage.setImage(image);
+                            song.getImages().add(image);
                         });
                         return null;
                     }
@@ -116,8 +127,34 @@ public class SpectrumController implements Initializable{
         S2.setOnSucceeded(event ->{
             boolean metamusicConclusion = fourierPerformer.analyzeFFT(rCoffs, lCoffs);
             JOptionPane.showMessageDialog(null, song.toString() + " "
-                    + ((metamusicConclusion)?"ES ":"NO ES ") + "Metamúsica");
+                    + ((metamusicConclusion) ? "NO ES " : "ES ") + "Metamúsica");
         });
+    }
+
+    private void paintSpectZoomed() {
+        Service<Void> service = new Service<Void>() {
+            @Override
+            protected Task<Void> createTask() {
+                return new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        Platform.runLater(() -> {
+                            WritableImage image = spectrumImageChart.prepareImage("Espectograma", "Frecuencia", "Tiempo");
+                            try {
+                                image = spectrumImageChart.drawSpectrumZoomed(image, lCoffs, fourierPerformer.WINDOW,
+                                        fourierPerformer.getMaxPosition(), (int) song.getWaveSound().getDurationMiliSec());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            spectrumImage.setImage(image);
+                            song.getImages().add(image);
+                        });
+                        return null;
+                    }
+                };
+            }
+        };
+        service.restart();
     }
 
     private void initiateData() {
@@ -142,7 +179,10 @@ public class SpectrumController implements Initializable{
                         amplitudesL.add(dataL);
                         amplitudesR.add(dataR);
                         Platform.runLater(() -> {
+                            WritableImage image = new WritableImage((int) waveform.getWidth(), (int) waveform.getHeight());
                             waveform.setData(amplitudesL);
+                            waveform.snapshot(null, image);
+                            song.getImages().add(image);
                         });
                         return null;
                     }
@@ -152,16 +192,58 @@ public class SpectrumController implements Initializable{
         bg.restart();
     }
 
+    private void handleClick(MouseEvent event) {
+        if (event.getButton() == MouseButton.SECONDARY) {
+            final ContextMenu contextMenu = new ContextMenu();
+            item1.setOnAction(event2 -> {
+                //Zoom en la región de interes
+                paintSpectZoomed();
+            });
+            item2.setOnAction(event2 -> {
+                //Abrir gráfica en otra ventana
+                if (event.getSource() instanceof ImageView)
+                    maximizeScene((ImageView) event.getSource());
+                else
+                    maximizeScene((LineChart) event.getSource());
+            });
+            contextMenu.getItems().addAll(item1, item2);
+            contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         waveform.setCreateSymbols(false);
+//        initiateProgressDialogs();
         initiateData();
         paintWaveForm();
         analyze();
+        SceneMaster.imageSpectrum = spectrumImage;
+        SceneMaster.waveform = waveform;
         spectrumImage.fitWidthProperty().bind(borderPane.widthProperty().divide(2));
         spectrumImage.fitHeightProperty().bind(hSpecBox.heightProperty());
+        spectrumImage.setOnMouseClicked(event -> handleClick(event));
+        waveform.setOnMouseClicked(event -> handleClick(event));
     }
 
+    private void maximizeScene(ImageView source) {
+        StageManager stageManager = new StageManager(FXMLScenes.SPECTRUM_MAXIMIZED);
+        stageManager.switchScene(FXMLScenes.SPECTRUM_MAXIMIZED, source);
+    }
+
+    private void maximizeScene(LineChart source) {
+        StageManager stageManager = new StageManager(FXMLScenes.WAVEFORM_MAXIMIZED);
+        stageManager.switchScene(FXMLScenes.WAVEFORM_MAXIMIZED, source);
+    }
+
+    private void initiateProgressDialogs() {
+        StageManager stageManager = new StageManager(FXMLScenes.PROGRESS);
+        try {
+            stageManager.start(new Stage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }

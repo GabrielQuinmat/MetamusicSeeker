@@ -1,0 +1,43 @@
+.button{
+-fx-border-radius: 20, 25, 25, 20;
+-fx-background-radius: 10, 8, 10, 8;
+-fx-padding: 4 4 4 4;
+-fx-background-color:
+    radial-gradient(center 60% 0%, radius 100%,  #757575, #323232);
+}
+
+.menu-bar{
+    -fx-background-color:
+        radial-gradient(center 60% 0%, radius 100%,  #757575, #323232);
+
+}
+
+.menu:openvertically{
+    -fx-background-color:
+        #c3c4c4,
+                linear-gradient(#d6d6d6 50%, white 100%),
+                radial-gradient(center 50% -40%, radius 200%, #e6e6e6 45%, rgba(230,230,230,0) 50%);
+    -fx-border-radius: 25;
+    -fx-background-radius: 10,8,8,10;
+}
+
+.menu-item {
+    -fx-background-color:
+            #c3c4c4,
+                    linear-gradient(#d6d6d6 50%, white 100%),
+                    radial-gradient(center 50% -40%, radius 200%, #e6e6e6 45%, rgba(230,230,230,0) 50%);
+        -fx-border-radius: 25;
+        -fx-background-radius: 10,8,8,10;
+}
+
+.context-menu{
+    -fx-background-color: radial-gradient(center 60% 0%, radius 100%,  #757575, #323232);
+}
+
+.menu-item:focused{
+    -fx-background-color: #bce2e5;
+}
+
+.hbox {
+    -fx-background-color: #9e9e9e;
+}
