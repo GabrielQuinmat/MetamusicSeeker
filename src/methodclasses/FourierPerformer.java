@@ -22,7 +22,7 @@ public class FourierPerformer {
     private final WaveSound waveData;
     FastFourierTransformer fft;
     double[] magnitudes;
-    public static final int JUMP_SECOND = 5;
+    public static final int JUMP_SECOND = 4;
 
     public FourierPerformer(WaveSound waveData) {
         this.waveData = waveData;
@@ -59,9 +59,9 @@ public class FourierPerformer {
         double jump = JUMP_SECOND * waveData.getAudioInputStream().getFormat().getSampleRate();
         float x = Math.round(array.length / jump);
         double[] divided = new double[(int) x * WINDOW];
-        for (int i = 0, y = 0, d = 0, index; i < divided.length; i++, y += 25) {
+        for (int i = 0, y = 0, d = 0, loopPrecision = 2, index; i < divided.length; i++, y += loopPrecision) {
             index = (int) (y + (d * jump));
-            if (y < (25 * WINDOW) && index < array.length) {
+            if (y < (loopPrecision * WINDOW) && index < array.length) {
                 divided[i] = array[index];
             } else if (index > array.length) {
                 divided[i] = 0.0;

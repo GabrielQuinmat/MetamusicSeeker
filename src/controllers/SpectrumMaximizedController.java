@@ -1,5 +1,6 @@
 package controllers;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -13,6 +14,9 @@ import javafx.scene.layout.HBox;
 import managers.FXMLScenes;
 import managers.StageManager;
 
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -45,6 +49,7 @@ public class SpectrumMaximizedController implements Initializable {
             final ContextMenu contextMenu = new ContextMenu();
             MenuItem item1 = new MenuItem("Zoom en la Región de Interés");
             MenuItem item2 = new MenuItem("Regresar a la Vista Anterior");
+            MenuItem item3 = new MenuItem("Guardar Imagen");
             item1.setOnAction(event2 -> {
                 //Zoom en la región de interes
 //                paintSpectZoomed();
@@ -53,7 +58,16 @@ public class SpectrumMaximizedController implements Initializable {
                 //Abrir gráfica en otra ventana
                 maximizeScene((ImageView) event.getSource());
             });
-            contextMenu.getItems().addAll(item1, item2);
+            item3.setOnAction(event1 -> {
+                File outfile = new File("snapshot.png");
+                try {
+                    ImageIO.write(SwingFXUtils.fromFXImage(((ImageView) event.getSource()).snapshot(null,
+                            null), null), "png", outfile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            contextMenu.getItems().addAll(item1, item2, item3);
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
         }
     }

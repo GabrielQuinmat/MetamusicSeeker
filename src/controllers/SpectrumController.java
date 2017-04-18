@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -26,7 +27,10 @@ import methodclasses.SceneMaster;
 import methodclasses.SpectrumImageChart;
 import pojo.Song;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -49,6 +53,7 @@ public class SpectrumController implements Initializable{
 
     MenuItem item1 = new MenuItem("Zoom en la Región de Interes");
     MenuItem item2 = new MenuItem("Abrir Gráfica en Nueva Ventana");
+    MenuItem item3 = new MenuItem("Guardar Imagen");
 
 
     @FXML
@@ -206,7 +211,16 @@ public class SpectrumController implements Initializable{
                 else
                     maximizeScene((LineChart) event.getSource());
             });
-            contextMenu.getItems().addAll(item1, item2);
+            item3.setOnAction(event1 -> {
+                File outfile = new File("snapshot.png");
+                try {
+                    ImageIO.write(SwingFXUtils.fromFXImage(((ImageView) event.getSource()).snapshot(null,
+                            null), null), "png", outfile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            contextMenu.getItems().addAll(item1, item2, item3);
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
         }
     }
