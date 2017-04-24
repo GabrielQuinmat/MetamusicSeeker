@@ -70,7 +70,7 @@ public class StageManager extends Application{
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fsceneTo.getFXMLName()));
             root = loader.load();
-            SceneMaster.spectrumSceneRoot = root;
+            SceneMaster.spectrumSceneRoot = node.getParent();
             WaveformMaximizedController controller;
             SpectrumMaximizedController controller1;
             if (loader.getController() instanceof WaveformMaximizedController) {
@@ -99,5 +99,11 @@ public class StageManager extends Application{
             scene = new Scene(root);
         scene.setRoot(root);
         return scene;
+    }
+
+    public void back(Scene backScene, Scene scene) {
+        stage = (Stage) scene.getWindow();
+        stage.setScene(backScene);
+        stage.show();
     }
 }

@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -22,7 +23,13 @@ public class FourierPerformer {
     private final WaveSound waveData;
     FastFourierTransformer fft;
     double[] magnitudes;
-    public static final int JUMP_SECOND = 4;
+    public static final int JUMP_SECOND = 5;
+    private double[] dBR;
+    private double[] dBL;
+    private HashMap<Integer, Integer> mapFreqL;
+    private HashMap<Integer, Integer> mapFreqR;
+    private boolean lChannel;
+    private boolean rChannel;
 
     public FourierPerformer(WaveSound waveData) {
         this.waveData = waveData;
@@ -114,19 +121,47 @@ public class FourierPerformer {
            significa que hubo cambios en frecuencias y sus potencias durante la canción, y no se puede considerar
            el archivo de audio como metamúsica.
         *  */
-        double[] dBR = new double[coffsR.length], dBL = new double[coffsL.length];
-        int maxPos = getMaxPosition();
-        dBL = convertToDB(coffsL);
-        dBR = convertToDB(coffsR);
-        int average = getAverageDB(dBL, dBR), positionNeed = getPositionNeed();
-        dBL = deleteLower(dBL);
-        dBR = deleteLower(dBR);
-        HashMap<Integer, Integer> mapFreq = createFreqMap(dBL, dBR, maxPos, average, positionNeed);
-        return followSequence(mapFreq, dBL, dBR, positionNeed, average);
+        dBR = new double[coffsR.length];
+        dBL = new double[coffsL.length];
+        int maxPos = getMaxPosition(), nWindow = (coffsL.length / (WINDOW / 2));
+        Thread t1 = new Thread(() -> {
+            dBL = convertToDB(coffsL);
+            int average = getAverageDB(dBL), positionNeed = getPositionNeed();
+            dBL = deleteLower(dBL);
+            mapFreqL = createFreqMap(maxPos, positionNeed, nWindow);
+            lChannel = followSequence(mapFreqL, dBL, positionNeed, average, nWindow);
+        }); //THREAD 1
+        Thread t2 = new Thread(() -> {
+            dBR = convertToDB(coffsR);
+            int average = getAverageDB(dBR), positionNeed = getPositionNeed();
+            dBR = deleteLower(dBR);
+            mapFreqR = createFreqMap(maxPos, positionNeed, nWindow);
+            rChannel = followSequence(mapFreqR, dBR, positionNeed, average, nWindow);
+        });
+        t1.start();
+        t2.start();
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+//        while(t1.isAlive() || t2.isAlive()){}
+        if (rChannel && lChannel)
+            return checkPositions(mapFreqL, mapFreqR);
+        return false;
     }
 
-    private boolean followSequence(HashMap<Integer, Integer> mapFreq, double[] arr1,
-                                   double[] arr2, int positionNeed, int averageDB) {
+    private boolean checkPositions(HashMap<Integer, Integer> mapFreqL, HashMap<Integer, Integer> mapFreqR) {
+        mapFreqL.forEach((key, value) -> {
+            if (!mapFreqR.containsKey(key))
+                mapFreqL.remove(key);
+        });
+        return mapFreqL.isEmpty();
+    }
+
+    private boolean followSequence(HashMap<Integer, Integer> mapFreq, double[] arr1, int positionNeed,
+                                   int averageDB, int nWindow) {
         /*El seguimiento del mapa se realiza de la siguiente forma:
         * 1. Se hace un seguimiento de un valor del mapa durante todas las ventanas
         * de tiempo. Es decir, se verifica que la potencia de las posiciones de los arreglos
@@ -137,26 +172,22 @@ public class FourierPerformer {
          * metamúsica.*/
         Set<Integer> keys = mapFreq.keySet();
         int criteria = Math.round((float) (averageDB * 0.05));
-        while (keys.iterator().hasNext()) {
-            int n = keys.iterator().next();
+        Iterator<Integer> iterator = keys.iterator();
+        while (iterator.hasNext()) {
+            int n = iterator.next();
             boolean first = true;
-            for (int i = n, x = 0, y = 0, xOld = 0, yOld = 0; i < arr1.length; i += WINDOW / 2) {
+            for (int i = n, x = 0, xOld = 0; i < arr1.length; i += WINDOW / 2) {
                 for (int j = 0; j < positionNeed; j++) {
                     x += (int) arr1[i + j];
-                    y += (int) arr2[i + j];
                 }
                 x /= positionNeed;
-                y /= positionNeed;
-                boolean dif = (!first) ? !(Math.abs(x - xOld) <= criteria && Math.abs(y - yOld) <= criteria) : false;
-                if ((!(Math.abs(y - x) <= (criteria)) || dif) && y != 0) {
-                    mapFreq.remove(n);
+                if ((!first) && !(Math.abs(x - xOld) <= criteria)) {
+                    iterator.remove();
                     break;
                 } else {
                     xOld = x;
-                    yOld = y;
                 }
                 x = 0;
-                y = 0;
                 first = false;
             }
         }
@@ -167,8 +198,7 @@ public class FourierPerformer {
         return (int) Math.ceil((double) 40 / (waveData.getFormat().getSampleRate() / WINDOW));
     }
 
-    private HashMap<Integer, Integer> createFreqMap(double[] arr1, double[] arr2, int maxPosition,
-                                                    int averageDB, int positionNeed) {
+    private HashMap<Integer, Integer> createFreqMap(int maxPosition, int positionNeed, int nWindow) {
         /*El proceso para la creación del mapa de frecuencias es ir comparando cada N posiciones de
         * arreglo, dependiendo de la cantidad de posiciones necesaria para  alcanzar los 40 Hz de rango.
         * 1. Se hace un comparativo entre N posiciones de la izquierda con N posiciones a la derecha.
@@ -178,30 +208,23 @@ public class FourierPerformer {
         * en potencia similares.
         * 3. Si cumplen con un rango similar de DB, se ingresan las posiciones de los arreglos que
         * concordaron en el mapa.*/
-        int criteria = Math.round((float) (averageDB * 0.05));
+        int forWindow = ((int) Math.ceil((nWindow * 0.05)) * (WINDOW / 2));
         HashMap<Integer, Integer> freqPosition = new HashMap<>();
-        for (int i = 0, x = 0, y = 0; i < maxPosition; i++) {
-            for (int j = 0; j < positionNeed; j++) {
-                x += (int) arr1[i + j];
-                y += (int) arr2[i + j];
-            }
-            x /= positionNeed;
-            y /= positionNeed;
-            if (Math.abs(y - x) <= criteria && y != 0) {
-                freqPosition.put(i, i + positionNeed);
-            }
-            x = 0;
-            y = 0;
+
+//        Comienza después del 5% de ventanas, para evitar el escape frecuencial que existe en las primeras
+//        ventanas.
+        for (int i = forWindow; i < maxPosition + forWindow; i++) {
+            freqPosition.put(i, i + (positionNeed - 1));
         }
         return freqPosition;
     }
 
-    private int getAverageDB(double[] arr1, double[] arr2) {
+    private int getAverageDB(double[] arr) {
         int average = 0;
-        for (int i = 0; i < arr1.length; i++) {
-            average += arr1[i] + arr2[i];
+        for (int i = 0; i < arr.length; i++) {
+            average += arr[i];
         }
-        average /= arr1.length * 2;
+        average /= arr.length;
         return average;
     }
 
@@ -213,7 +236,7 @@ public class FourierPerformer {
         return arr;
     }
 
-    private double[] convertToDB(double[] arr) {
+    private synchronized double[] convertToDB(double[] arr) {
         double[] newArr = new double[arr.length];
         for (int i = 0; i < arr.length; i++) {
             newArr[i] = (arr[i] != 0) ? 20 * Math.log10(arr[i]) : 0;

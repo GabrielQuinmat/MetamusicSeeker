@@ -1,5 +1,8 @@
 package controllers;
 
+import javafx.application.Platform;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -8,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -19,6 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import static controllers.SpectrumController.song;
+import static controllers.SpectrumController.spectrumImageChart;
+import static methodclasses.SceneMaster.fourierPerformer;
 
 /**
  * Created by Gabo on 12/04/2017.
@@ -52,11 +60,14 @@ public class SpectrumMaximizedController implements Initializable {
             MenuItem item3 = new MenuItem("Guardar Imagen");
             item1.setOnAction(event2 -> {
                 //Zoom en la región de interes
-//                paintSpectZoomed();
+                if (song.getImages().get(1) != null)
+                    paintSpectZoomed();
+                else
+                    image.setImage(song.getImages().get(2));
             });
             item2.setOnAction(event2 -> {
                 //Abrir gráfica en otra ventana
-                maximizeScene((ImageView) event.getSource());
+                backToScene();
             });
             item3.setOnAction(event1 -> {
                 File outfile = new File("snapshot.png");
@@ -72,9 +83,35 @@ public class SpectrumMaximizedController implements Initializable {
         }
     }
 
-    private void maximizeScene(ImageView source) {
+    private void backToScene() {
         StageManager stageManager = new StageManager(FXMLScenes.SPECTRUM);
-        stageManager.switchScene(FXMLScenes.SPECTRUM, source);
+        stageManager.back(backScene, image.getScene());
+    }
+
+    private void paintSpectZoomed() {
+        Service<Void> service = new Service<Void>() {
+            @Override
+            protected Task<Void> createTask() {
+                return new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        Platform.runLater(() -> {
+                            WritableImage imageW = spectrumImageChart.prepareImage("Espectograma", "Frecuencia", "Tiempo");
+                            try {
+                                imageW = spectrumImageChart.drawSpectrumZoomed(imageW, song.getFftL(), fourierPerformer.WINDOW,
+                                        fourierPerformer.getMaxPosition(), (int) song.getWaveSound().getDurationMiliSec());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            image.setImage(imageW);
+                            song.getImages().add(imageW);
+                        });
+                        return null;
+                    }
+                };
+            }
+        };
+        service.restart();
     }
 
     @Override

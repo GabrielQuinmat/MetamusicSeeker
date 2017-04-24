@@ -16,4 +16,7 @@ public class SceneMaster {
     public static ImageView imageSpectrum;
     public static LineChart waveform;
 
+    public static FourierPerformer fourierPerformer;
+
+
 }

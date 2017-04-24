@@ -49,7 +49,7 @@ public class SpectrumController implements Initializable{
     private FourierPerformer fourierPerformer;
     private double[] lCoffs;
     private double[] rCoffs;
-    SpectrumImageChart spectrumImageChart;
+    public static SpectrumImageChart spectrumImageChart;
 
     MenuItem item1 = new MenuItem("Zoom en la Región de Interes");
     MenuItem item2 = new MenuItem("Abrir Gráfica en Nueva Ventana");
@@ -73,6 +73,9 @@ public class SpectrumController implements Initializable{
                     protected Void call() throws Exception {
                         if (song.getWaveSound() != null) {
                             fourierPerformer = new FourierPerformer(song.getWaveSound());
+
+                            SceneMaster.fourierPerformer = fourierPerformer;
+
                             lCoffs = fourierPerformer.performFFT(song.getAmplitudesL());
                             rCoffs = fourierPerformer.performFFT(song.getAmplitudesR());
 
