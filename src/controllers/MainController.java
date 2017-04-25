@@ -30,6 +30,13 @@ public class MainController implements Initializable {
     Window window;
 
     @FXML
+    Button openB;
+    @FXML
+    Button openGraphB;
+    @FXML
+    Button openInfoB;
+
+    @FXML
     MenuItem guideMI;
     @FXML
     MenuItem aboutMI;
@@ -44,17 +51,7 @@ public class MainController implements Initializable {
     @FXML
     TextArea songInfo;
     @FXML
-    Button playButton;
-    @FXML
-    Button stopButton;
-    @FXML
-    Button fowardButton;
-    @FXML
-    Button backwardButton;
-    @FXML
     Button analyzeButton;
-    @FXML
-    TextArea textArea;
 
     ObservableList<String> songNames = FXCollections.observableArrayList();
     SongList songs;
@@ -82,18 +79,7 @@ public class MainController implements Initializable {
         window = Main.window;
         getSongsFromList();
         openMI.setOnAction(event -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Selecciona un Archivo de Audio");
-            fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("Archivos de Audio", "*.wav", "*.mp3"));
-            File selectedFile = fileChooser.showOpenDialog(window);
-            if (selectedFile != null) {
-                Song song = new Song(selectedFile.getPath());
-                songs.add(song);
-                songNames.add(song.getPath());
-                songsItems.getItems().add(song);
-            } else
-                JOptionPane.showMessageDialog(null, "No se seleccionó ningún archivo.");
+            openAction();
         });
 
         saveMI.setOnAction(event -> {
@@ -125,5 +111,21 @@ public class MainController implements Initializable {
             }
         });
 
+    }
+
+    @FXML
+    private void openAction() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Selecciona un Archivo de Audio");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Archivos de Audio", "*.wav", "*.mp3"));
+        File selectedFile = fileChooser.showOpenDialog(window);
+        if (selectedFile != null) {
+            Song song = new Song(selectedFile.getPath());
+            songs.add(song);
+            songNames.add(song.getPath());
+            songsItems.getItems().add(song);
+        } else
+            JOptionPane.showMessageDialog(null, "No se seleccionó ningún archivo.");
     }
 }
