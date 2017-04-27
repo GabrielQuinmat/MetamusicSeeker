@@ -146,13 +146,7 @@ public class WaveSound implements Serializable{
         HashMap<String, double[]> channelMap = new HashMap<>();
         double[] channelL = new double[size];
         double[] channelR = new double[size];
-        for (int i = 0, x = 0; i < sizeFor; i += 2, x++) {
-//            for (int j = i; j < i+frameSize; j++) {
-//                if ((j-i) < ((frameSize)/2))
-//                channelL[x] = audioData[j];
-//                else
-//                channelR[x] = audioData[j];
-//            }
+        for (int i = 0, x = 0; i + 1 < sizeFor; i += 2, x++) {
             channelL[x] = audioData[i];
             channelR[x] = audioData[i + 1];
         }

@@ -60,8 +60,7 @@ public class SpectrumController implements Initializable{
     ImageView spectrumImage;
     @FXML
     HBox hSpecBox;
-    private ObservableList<XYChart.Series<Integer, Double>> amplitudesL;
-    private ObservableList<XYChart.Series<Integer, Double>> amplitudesR;
+    private ObservableList<XYChart.Series<Integer, Double>> amplitudes;
 
 
     private void analyze(){
@@ -82,8 +81,8 @@ public class SpectrumController implements Initializable{
                             song.setFftL(lCoffs);
                             song.setFftR(rCoffs);
 
-                            fourierPerformer.FFTFormatted(lCoffs, "FFT Left.txt");
-                            fourierPerformer.FFTFormatted(rCoffs, "FFT Right.txt");
+//                            fourierPerformer.FFTFormatted(lCoffs, "FFT Left.txt");
+//                            fourierPerformer.FFTFormatted(rCoffs, "FFT Right.txt");
                         }
                         return null;
                     }
@@ -135,7 +134,7 @@ public class SpectrumController implements Initializable{
         S2.setOnSucceeded(event ->{
             boolean metamusicConclusion = fourierPerformer.analyzeFFT(rCoffs, lCoffs);
             JOptionPane.showMessageDialog(null, song.toString() + " "
-                    + ((metamusicConclusion) ? "NO ES " : "ES ") + "Metamúsica");
+                    + ((metamusicConclusion) ? "ES " : "NO ES ") + "Metamúsica");
         });
     }
 
@@ -176,19 +175,19 @@ public class SpectrumController implements Initializable{
                 return new Task<Void>() {
                     @Override
                     protected Void call() throws Exception {
-                        amplitudesL = FXCollections.observableArrayList();
-                        amplitudesR = FXCollections.observableArrayList();
+                        amplitudes = FXCollections.observableArrayList();
                         XYChart.Series<Integer, Double> dataL = new XYChart.Series();
+                        dataL.setName("Canal Izquierdo");
                         XYChart.Series<Integer, Double> dataR = new XYChart.Series();
+                        dataR.setName("Canal Derecho");
                         for (int x = 0; x < song.getAmpRedL().length; x++) {
                             dataL.getData().add(new XYChart.Data(x, song.getAmpRedL()[x]));
                             dataR.getData().add(new XYChart.Data<>(x, song.getAmpRedR()[x]));
                         }
-                        amplitudesL.add(dataL);
-                        amplitudesR.add(dataR);
+                        amplitudes.addAll(dataL, dataR);
                         Platform.runLater(() -> {
                             WritableImage image = new WritableImage((int) waveform.getWidth(), (int) waveform.getHeight());
-                            waveform.setData(amplitudesL);
+                            waveform.setData(amplitudes);
                             waveform.snapshot(null, image);
                             song.getImages().add(image);
                         });
@@ -231,7 +230,7 @@ public class SpectrumController implements Initializable{
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         waveform.setCreateSymbols(false);
-//        initiateProgressDialogs();
+        waveform.setAnimated(false);
         initiateData();
         paintWaveForm();
         analyze();

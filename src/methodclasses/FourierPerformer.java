@@ -30,6 +30,8 @@ public class FourierPerformer {
     private HashMap<Integer, Integer> mapFreqR;
     private boolean lChannel;
     private boolean rChannel;
+    private int averageL;
+    private int averageR;
 
     public FourierPerformer(WaveSound waveData) {
         this.waveData = waveData;
@@ -66,7 +68,7 @@ public class FourierPerformer {
         double jump = JUMP_SECOND * waveData.getAudioInputStream().getFormat().getSampleRate();
         float x = Math.round(array.length / jump);
         double[] divided = new double[(int) x * WINDOW];
-        for (int i = 0, y = 0, d = 0, loopPrecision = 2, index; i < divided.length; i++, y += loopPrecision) {
+        for (int i = 0, y = 0, d = 0, loopPrecision = 1, index; i < divided.length; i++, y += loopPrecision) {
             index = (int) (y + (d * jump));
             if (y < (loopPrecision * WINDOW) && index < array.length) {
                 divided[i] = array[index];
@@ -126,17 +128,19 @@ public class FourierPerformer {
         int maxPos = getMaxPosition(), nWindow = (coffsL.length / (WINDOW / 2));
         Thread t1 = new Thread(() -> {
             dBL = convertToDB(coffsL);
-            int average = getAverageDB(dBL), positionNeed = getPositionNeed();
+            int positionNeed = getPositionNeed();
+            averageL = getAverageDB(dBL);
             dBL = deleteLower(dBL);
-            mapFreqL = createFreqMap(maxPos, positionNeed, nWindow);
-            lChannel = followSequence(mapFreqL, dBL, positionNeed, average, nWindow);
+            mapFreqL = createFreqMap(dBL, maxPos, positionNeed, nWindow);
+            lChannel = followSequence(mapFreqL, dBL, positionNeed, averageL, nWindow);
         }); //THREAD 1
         Thread t2 = new Thread(() -> {
             dBR = convertToDB(coffsR);
-            int average = getAverageDB(dBR), positionNeed = getPositionNeed();
+            int positionNeed = getPositionNeed();
+            averageR = getAverageDB(dBR);
             dBR = deleteLower(dBR);
-            mapFreqR = createFreqMap(maxPos, positionNeed, nWindow);
-            rChannel = followSequence(mapFreqR, dBR, positionNeed, average, nWindow);
+            mapFreqR = createFreqMap(dBR, maxPos, positionNeed, nWindow);
+            rChannel = followSequence(mapFreqR, dBR, positionNeed, averageR, nWindow);
         });
         t1.start();
         t2.start();
@@ -146,18 +150,22 @@ public class FourierPerformer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-//        while(t1.isAlive() || t2.isAlive()){}
-        if (rChannel && lChannel)
-            return checkPositions(mapFreqL, mapFreqR);
+        if (!rChannel && !lChannel)
+            return checkPositions(mapFreqL, mapFreqR, dBL, dBR, averageL);
         return false;
     }
 
-    private boolean checkPositions(HashMap<Integer, Integer> mapFreqL, HashMap<Integer, Integer> mapFreqR) {
-        mapFreqL.forEach((key, value) -> {
-            if (!mapFreqR.containsKey(key))
-                mapFreqL.remove(key);
-        });
-        return mapFreqL.isEmpty();
+    private boolean checkPositions(HashMap<Integer, Integer> mapFreqL, HashMap<Integer, Integer> mapFreqR,
+                                   double[] dBL, double[] dBR, int average) {
+        double criteria = Math.round(average * 0.05);
+        Iterator<Integer> iterator = mapFreqL.keySet().iterator();
+        while (iterator.hasNext()) {
+            int n = iterator.next();
+            double dif = Math.abs(dBL[n] - dBR[mapFreqR.get(n)]);
+            if (!mapFreqR.containsKey(n) || (dif) > criteria)
+                iterator.remove();
+        }
+        return !mapFreqL.isEmpty();
     }
 
     private boolean followSequence(HashMap<Integer, Integer> mapFreq, double[] arr1, int positionNeed,
@@ -198,7 +206,7 @@ public class FourierPerformer {
         return (int) Math.ceil((double) 40 / (waveData.getFormat().getSampleRate() / WINDOW));
     }
 
-    private HashMap<Integer, Integer> createFreqMap(int maxPosition, int positionNeed, int nWindow) {
+    private HashMap<Integer, Integer> createFreqMap(double[] array, int maxPosition, int positionNeed, int nWindow) {
         /*El proceso para la creación del mapa de frecuencias es ir comparando cada N posiciones de
         * arreglo, dependiendo de la cantidad de posiciones necesaria para  alcanzar los 40 Hz de rango.
         * 1. Se hace un comparativo entre N posiciones de la izquierda con N posiciones a la derecha.
@@ -214,7 +222,8 @@ public class FourierPerformer {
 //        Comienza después del 5% de ventanas, para evitar el escape frecuencial que existe en las primeras
 //        ventanas.
         for (int i = forWindow; i < maxPosition + forWindow; i++) {
-            freqPosition.put(i, i + (positionNeed - 1));
+            if (array[i] != 0)
+                freqPosition.put(i, i + (positionNeed - 1));
         }
         return freqPosition;
     }
