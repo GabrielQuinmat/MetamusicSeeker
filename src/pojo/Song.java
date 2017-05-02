@@ -2,6 +2,8 @@ package pojo;
 
 import javafx.scene.image.Image;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,7 +98,7 @@ public class Song implements Serializable {
         this.fftL = fftL;
     }
 
-    public void getWaveSoundData() {
+    public void getWaveSoundData() throws IOException, UnsupportedAudioFileException {
         if (waveMP3 != null) {
             waveSound = new WaveSound(waveMP3);
         }else{

@@ -1,18 +1,13 @@
 package pojo;
 
-import methodclasses.ConversionFormatter;
-
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.*;
 import java.io.*;
 import java.util.HashMap;
 
 /**
  * Created by Gabo on 31/03/2017.
  */
-public class WaveSound implements Serializable{
+public class WaveSound implements Serializable {
 
     private byte[] arrFile;
     private byte[] audioBytes;
@@ -22,19 +17,20 @@ public class WaveSound implements Serializable{
     private AudioFormat format;
     private double durationSec;
     private double durationMSec;
+    private double sampleRate;
+    private double frameSize;
     private File wavFile;
 
     public WaveSound(String path) {
         wavFile = new File(path);
     }
 
-    public WaveSound(WaveMP3 mp3File){
-        wavFile = ConversionFormatter.convertMP3toWAV(mp3File.file);
-        extractAmplitudeFromFile();
+    public WaveSound(WaveMP3 mp3File) throws IOException, UnsupportedAudioFileException {
+        extractAmplitudeDataFromAudioInputStream(mp3File.getAudioData(), mp3File.file);
     }
 
 
-    public double[] extractAmplitudeFromFile() {
+    public double[] extractAmplitudeFromFile() throws IOException, UnsupportedAudioFileException {
         try {
             // create file input stream
             FileInputStream fis = new FileInputStream(wavFile);
@@ -47,7 +43,7 @@ public class WaveSound implements Serializable{
         return extractAmplitudeFromFileByteArray(arrFile);
     }
 
-    public double[] extractAmplitudeFromFileByteArray(byte[] arrFile) {
+    public double[] extractAmplitudeFromFileByteArray(byte[] arrFile) throws IOException, UnsupportedAudioFileException {
         // System.out.println("File : "+wavFile+""+arrFile.length);
         bis = new ByteArrayInputStream(arrFile);
         return extractAmplitudeFromFileByteArrayInputStream(bis);
@@ -60,7 +56,7 @@ public class WaveSound implements Serializable{
      * @return PCM audioData
      * @throws Exception
      */
-    public double[] extractAmplitudeFromFileByteArrayInputStream(ByteArrayInputStream bis) {
+    public double[] extractAmplitudeFromFileByteArrayInputStream(ByteArrayInputStream bis) throws IOException, UnsupportedAudioFileException {
         try {
             audioInputStream = AudioSystem.getAudioInputStream(bis);
         } catch (UnsupportedAudioFileException e) {
@@ -76,14 +72,16 @@ public class WaveSound implements Serializable{
         return extractAmplitudeDataFromAudioInputStream(audioInputStream);
     }
 
-    public double[] extractAmplitudeDataFromAudioInputStream(AudioInputStream audioInputStream) {
+    public double[] extractAmplitudeDataFromAudioInputStream(AudioInputStream audioInputStream) throws IOException, UnsupportedAudioFileException {
         format = audioInputStream.getFormat();
         int MAXSIZE = 54000000;
-        audioBytes = new byte[((int) (audioInputStream.getFrameLength() * format.getFrameSize()) > MAXSIZE) ? MAXSIZE
+        audioBytes = new byte[((audioInputStream.getFrameLength() * format.getFrameSize()) > MAXSIZE) ? MAXSIZE
                 : (int) (audioInputStream.getFrameLength() * format.getFrameSize())];
         // calculate durations
         durationMSec = (long) ((audioInputStream.getFrameLength() * 1000) / audioInputStream.getFormat().getFrameRate());
         durationSec = durationMSec / 1000.0;
+        sampleRate = audioInputStream.getFormat().getSampleRate();
+        frameSize = audioInputStream.getFormat().getFrameSize();
         // System.out.println("The current signal has duration "+durationSec+" Sec");
         try {
             audioInputStream.read(audioBytes);
@@ -94,9 +92,38 @@ public class WaveSound implements Serializable{
         return extractAmplitudeDataFromAmplitudeByteArray(format, audioBytes);
     }
 
+    public double[] extractAmplitudeDataFromAudioInputStream(AudioInputStream audioInputStream, File file) throws IOException, UnsupportedAudioFileException {
+        format = audioInputStream.getFormat();
+        AudioFileFormat format2 = AudioSystem.getAudioFileFormat(file);
+        frameSize = format2.getFormat().getFrameSize();
+        sampleRate = format2.getFormat().getSampleRate();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int MAXSIZE = 54000000;
+        byte[] buffer = new byte[4096];
+        // calculate durations
+        durationMSec = (long) ((format2.getFrameLength() * 1000) / audioInputStream.getFormat().getFrameRate());
+        durationSec = durationMSec / 1000.0;
+        // System.out.println("The current signal has duration "+durationSec+" Sec");
+        try {
+            while (true) {
+                int n = audioInputStream.read(buffer, 0, buffer.length);
+                if (n == -1 || n > MAXSIZE)
+                    break;
+                baos.write(buffer, 0, n);
+            }
+            audioInputStream.close();
+            audioBytes = baos.toByteArray();
+            baos.close();
+        } catch (IOException e) {
+            System.out.println("IOException during reading audioBytes");
+            e.printStackTrace();
+        }
+        return extractAmplitudeDataFromAmplitudeByteArray(format, audioBytes);
+    }
+
     public double[] extractAmplitudeDataFromAmplitudeByteArray(AudioFormat format, byte[] audioBytes) {
         // convert
-        // TODO: calculate duration here
+
         audioData = null;
         if (format.getSampleSizeInBits() == 16) {
             int nlengthInSamples = audioBytes.length / 2;
@@ -197,5 +224,13 @@ public class WaveSound implements Serializable{
 
     public AudioInputStream getAudioInputStream() {
         return audioInputStream;
+    }
+
+    public double getSampleRate() {
+        return sampleRate;
+    }
+
+    public double getFrameSize() {
+        return frameSize;
     }
 }

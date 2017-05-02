@@ -4,11 +4,17 @@ import javafx.animation.FillTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.media.Media;
@@ -20,6 +26,7 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 import managers.FXMLScenes;
 import managers.StageManager;
+import pojo.MetadataMedia;
 import pojo.Song;
 import stages.Main;
 
@@ -51,7 +58,7 @@ public class MainController implements Initializable {
     @FXML
     TextFlow songTextFlow;
     @FXML
-    TextFlow songInfoTF;
+    TableView<MetadataMedia> songInfoTV;
 
     @FXML
     MenuItem guideMI;
@@ -68,16 +75,27 @@ public class MainController implements Initializable {
     private Song song;
     private Text songPrelude;
     private Text songInfoPrelude;
-    private FillTransition fillTransition;
+    private FillTransition fillTransition = new FillTransition();
     private Timeline timeline;
+    private boolean analyzeState = false;
 
     private Font font = Font.font("Palatino Linotype", FontWeight.BOLD, 20);
+    private ObservableList<MetadataMedia> tableListMetadata = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         window = Main.window;
+        songInfoTV.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("key"));
+        songInfoTV.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("value"));
         setTextFlow();
-        //getSongsFromList();
+        analyzeButton.setOnAction(event -> {
+            if (analyzeState)
+                setAnalyzing();
+            else
+                setNoAnalyzing();
+            playTransition(fillTransition);
+            analyzeState = !analyzeState;
+        });
         openMI.setOnAction(event -> {
             try {
                 openAction();
@@ -118,16 +136,31 @@ public class MainController implements Initializable {
 
     }
 
+    private void setNoAnalyzing() {
+        fillTransition.setShape(analyzeButton.getShape());
+        fillTransition.setDuration(Duration.seconds(3));
+        fillTransition.setFromValue(Color.FIREBRICK);
+        fillTransition.setToValue(Color.WHITE);
+    }
+
+    private void setAnalyzing() {
+        fillTransition.setShape(analyzeButton.getShape());
+        fillTransition.setDuration(Duration.seconds(3));
+        fillTransition.setFromValue(Color.WHITE);
+        fillTransition.setToValue(Color.FIREBRICK);
+    }
+
+    private void playTransition(FillTransition transition) {
+        transition.stop();
+        transition.play();
+    }
+
     private void setTextFlow() {
-        songPrelude = new Text("No hay algún archivo de audio cargado");
+        songPrelude = new Text("No hay archivo de audio cargado");
         songPrelude.setFont(font);
         songTextFlow.setLineSpacing(5);
         songTextFlow.setTextAlignment(TextAlignment.CENTER);
         songTextFlow.getChildren().add(songPrelude);
-        songInfoPrelude = new Text("Información General\n");
-        songInfoPrelude.setFont(font);
-        songInfoTF.setLineSpacing(5);
-        songInfoTF.getChildren().add(songInfoPrelude);
     }
 
     @FXML
@@ -140,12 +173,13 @@ public class MainController implements Initializable {
         if (selectedFile != null) {
             if (AudioSystem.getAudioFileFormat(selectedFile).getFormat().getChannels() == 2) {
                 song = new Song(selectedFile.getPath());
-                fadeInNode();
-                songPrelude.setFill(Color.WHITE);
+                fadeInNode(songTextFlow);
+                songPrelude.setFill(Color.CADETBLUE);
                 songPrelude.setText(selectedFile.getPath());
-                songInfoTF.getChildren().removeAll();
                 getMetadata(new Media(selectedFile.toURI().toString()));
                 getAudioInputInfo(AudioSystem.getAudioFileFormat(selectedFile));
+                fadeInNode(songInfoTV);
+                songInfoTV.setItems(tableListMetadata);
             } else {
                 JOptionPane.showMessageDialog(null, "El archivo es monoaural. Debe ser" +
                         " un archivo de audio Estéreo");
@@ -155,19 +189,20 @@ public class MainController implements Initializable {
     }
 
     private void getAudioInputInfo(AudioFileFormat audioFileFormat) {
-        Text t1 = new Text("Longitud en Bytes: " + audioFileFormat.getByteLength() + "\n"),
-                t2 = new Text("Formato: " + audioFileFormat.getFormat() + "\n"),
-                t3 = new Text("Longitud en Frame: " + audioFileFormat.getFrameLength() + "\n");
-        t1.setFont(font);
-        t2.setFont(font);
-        t3.setFont(font);
-        songInfoTF.getChildren().addAll(t1, t2, t3);
+        tableListMetadata.add(new MetadataMedia("Longitud en Bytes", audioFileFormat.getByteLength()));
+        tableListMetadata.add(new MetadataMedia("Canales", audioFileFormat.getFormat().getChannels()));
+        tableListMetadata.add(new MetadataMedia("Codificación", audioFileFormat.getFormat().getEncoding()));
+        tableListMetadata.add(new MetadataMedia("Tamaño de Frame", audioFileFormat.getFormat().getFrameSize()));
+        tableListMetadata.add(new MetadataMedia("Longitud en Frame", audioFileFormat.getFrameLength()));
+        tableListMetadata.add(new MetadataMedia("Frecuencia de Muestreo", audioFileFormat.getFormat().getSampleRate()));
+        tableListMetadata.add(new MetadataMedia("Frecuencia de Frames", audioFileFormat.getFormat().getFrameRate()));
+        tableListMetadata.add(new MetadataMedia("Tamaño en Bits", audioFileFormat.getFormat().getSampleSizeInBits()));
     }
 
-    private void fadeInNode() {
+    private void fadeInNode(Node node) {
         timeline = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(songTextFlow.opacityProperty(), 0.0)),
-                new KeyFrame(new Duration(800), new KeyValue(songTextFlow.opacityProperty(), 1.0)));
+                new KeyFrame(Duration.ZERO, new KeyValue(node.opacityProperty(), 0.0)),
+                new KeyFrame(new Duration(1200), new KeyValue(node.opacityProperty(), 1.0)));
         timeline.play();
     }
 
@@ -190,11 +225,11 @@ public class MainController implements Initializable {
     }
 
     private void generateNewText(String key, Object valueAdded) {
-        songInfoTF.getChildren().removeAll();
         try {
-            Text t1 = new Text(key), t2 = new Text(valueAdded + "\n");
-            t1.setFont(Font.font("Palatino Linotype", FontWeight.BOLD, 20));
-            songInfoTF.getChildren().addAll(t1, t2, new Text());
+            if (key.equalsIgnoreCase("image"))
+                tableListMetadata.add(new MetadataMedia(key, (Image) valueAdded));
+            else
+                tableListMetadata.add(new MetadataMedia(key, valueAdded.toString()));
         } catch (Exception e) {
         }
     }

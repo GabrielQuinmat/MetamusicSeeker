@@ -65,7 +65,7 @@ public class FourierPerformer {
     }
 
     private double[] divideWindows(double[] array) {
-        double jump = JUMP_SECOND * waveData.getAudioInputStream().getFormat().getSampleRate();
+        double jump = JUMP_SECOND * waveData.getSampleRate();
         float x = Math.round(array.length / jump);
         double[] divided = new double[(int) x * WINDOW];
         for (int i = 0, y = 0, d = 0, loopPrecision = 1, index; i < divided.length; i++, y += loopPrecision) {

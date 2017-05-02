@@ -203,7 +203,7 @@ public class SpectrumImageChart {
     private void setAxisNumeration(Image image, double maxF, int milisecs) {
         canvas = new Canvas(image.getWidth(), image.getHeight());
         gc = canvas.getGraphicsContext2D();
-        gc.setFont(Font.font(9));
+        gc.setFont(Font.font(11));
         //Left Marks
         double milisecsPerMark = Math.round(milisecs / HORIZONTAL_MARKS), freqPerMark = Math.round(maxF / VERTICAL_MARKS);
         for (double i = BOX_HEIGTH_END, x = 0; i >= BOX_HEIGTH_INIT; i -= VERTICAL_MARKS_PIXEL, x++) {
