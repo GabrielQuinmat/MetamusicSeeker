@@ -1,6 +1,6 @@
 package controllers;
 
-import javafx.animation.FillTransition;
+import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -14,6 +14,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -49,13 +51,6 @@ public class MainController implements Initializable {
     Window window;
 
     @FXML
-    Button openB;
-    @FXML
-    Button openGraphB;
-    @FXML
-    Button openInfoB;
-
-    @FXML
     TextFlow songTextFlow;
     @FXML
     TableView<MetadataMedia> songInfoTV;
@@ -74,28 +69,18 @@ public class MainController implements Initializable {
     Button analyzeButton;
     private Song song;
     private Text songPrelude;
-    private Text songInfoPrelude;
-    private FillTransition fillTransition = new FillTransition();
     private Timeline timeline;
-    private boolean analyzeState = false;
 
-    private Font font = Font.font("Palatino Linotype", FontWeight.BOLD, 20);
+    private Font font = Font.font("Palatino Linotype", FontWeight.BOLD, 17);
     private ObservableList<MetadataMedia> tableListMetadata = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         window = Main.window;
+        setEffects();
         songInfoTV.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("key"));
         songInfoTV.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("value"));
         setTextFlow();
-        analyzeButton.setOnAction(event -> {
-            if (analyzeState)
-                setAnalyzing();
-            else
-                setNoAnalyzing();
-            playTransition(fillTransition);
-            analyzeState = !analyzeState;
-        });
         openMI.setOnAction(event -> {
             try {
                 openAction();
@@ -117,6 +102,8 @@ public class MainController implements Initializable {
 
         analyzeButton.setOnAction(event -> {
             if (song != null) {
+                analyzeButton.setStyle("");
+                colorInNode(analyzeButton);
                 SpectrumController.song = song;
                 stageManager = new StageManager(FXMLScenes.SPECTRUM);
                 try {
@@ -136,24 +123,15 @@ public class MainController implements Initializable {
 
     }
 
-    private void setNoAnalyzing() {
-        fillTransition.setShape(analyzeButton.getShape());
-        fillTransition.setDuration(Duration.seconds(3));
-        fillTransition.setFromValue(Color.FIREBRICK);
-        fillTransition.setToValue(Color.WHITE);
+
+    private void setEffects() {
+        DropShadow dropShadow = new DropShadow(
+                5.0, 5, 7, Color.color(0.4, 0.5, 0.5, 0.7));
+        songInfoTV.setEffect(dropShadow);
+        songTextFlow.setEffect(dropShadow);
     }
 
-    private void setAnalyzing() {
-        fillTransition.setShape(analyzeButton.getShape());
-        fillTransition.setDuration(Duration.seconds(3));
-        fillTransition.setFromValue(Color.WHITE);
-        fillTransition.setToValue(Color.FIREBRICK);
-    }
 
-    private void playTransition(FillTransition transition) {
-        transition.stop();
-        transition.play();
-    }
 
     private void setTextFlow() {
         songPrelude = new Text("No hay archivo de audio cargado");
@@ -181,7 +159,8 @@ public class MainController implements Initializable {
                 fadeInNode(songInfoTV);
                 songInfoTV.setItems(tableListMetadata);
             } else {
-                JOptionPane.showMessageDialog(null, "El archivo es monoaural. Debe ser" +
+                JOptionPane.showMessageDialog(null,
+                        "El archivo es monoaural. Debe ser" +
                         " un archivo de audio Estéreo");
             }
         } else
@@ -206,6 +185,17 @@ public class MainController implements Initializable {
         timeline.play();
     }
 
+    private void colorInNode(Node node) {
+        ColorAdjust colorAdjust = new ColorAdjust();
+        colorAdjust.setBrightness(0);
+        node.setEffect(colorAdjust);
+        timeline = new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(colorAdjust.brightnessProperty(),
+                colorAdjust.brightnessProperty().getValue(), Interpolator.LINEAR)),
+                new KeyFrame(Duration.seconds(1), new KeyValue(colorAdjust.brightnessProperty(),
+                        0, Interpolator.LINEAR)));
+        timeline.play();
+    }
+
     private void errorTextFlow() {
         Timeline timeline = new Timeline();
         KeyValue initK = new KeyValue(songTextFlow.backgroundProperty(),
@@ -221,7 +211,8 @@ public class MainController implements Initializable {
 
     public void getMetadata(Media media) {
         ObservableMap<String, Object> metadata = media.getMetadata();
-        metadata.forEach((s, o) -> generateNewText(s, o));
+        if (metadata.size() != 0)
+            metadata.forEach((s, o) -> generateNewText(s, o));
     }
 
     private void generateNewText(String key, Object valueAdded) {

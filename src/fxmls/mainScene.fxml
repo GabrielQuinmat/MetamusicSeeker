@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.*?>
@@ -53,6 +53,9 @@
                     <HBox.margin>
                         <Insets bottom="10.0" left="10.0" top="10.0"/>
                     </HBox.margin>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                    </padding>
                 </TextFlow>
                 <TableView fx:id="songInfoTV" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
                            prefHeight="525.0" prefWidth="730.0" HBox.hgrow="ALWAYS">
