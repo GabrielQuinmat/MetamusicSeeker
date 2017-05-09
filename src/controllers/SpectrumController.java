@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -209,26 +210,17 @@ public class SpectrumController implements Initializable{
     private void handleClickImage(MouseEvent event) {
         if (event.getButton() == MouseButton.SECONDARY) {
             final ContextMenu contextMenu = new ContextMenu();
-            item1.setText("Zoom en la Región de Interés");
+            rewriteMenuText();
             item1.setOnAction(event2 -> {
                 //Zoom en la región de interes
                 paintSpectZoomed();
             });
             item2.setOnAction(event2 -> {
                 //Abrir gráfica en otra ventana
-                if (event.getSource() instanceof ImageView)
-                    maximizeScene((ImageView) event.getSource());
-                else
-                    maximizeScene((LineChart) event.getSource());
+                maximizeScene(0);
             });
             item3.setOnAction(event1 -> {
-                File outfile = new File("snapshot.png");
-                try {
-                    ImageIO.write(SwingFXUtils.fromFXImage(((ImageView) event.getSource()).snapshot(null,
-                            null), null), "png", outfile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                snapshotImage("snapshot.png", event);
             });
             item4.setOnAction(event1 -> {
                 spectrumImage.setImage(song.getImages().get((channel) ? 0 : 1));
@@ -236,6 +228,23 @@ public class SpectrumController implements Initializable{
             });
             contextMenu.getItems().addAll(item1, item2, item3, item4);
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
+        }
+    }
+
+    private void rewriteMenuText() {
+        item1.setText("Zoom en la Región de Interés");
+        item2.setText("Abrir Gráfica en Nueva Ventana");
+        item3.setText("Guardar Imagen");
+        item4.setText("Cambiar de Canal");
+    }
+
+    private void snapshotImage(String pathName, Event event) {
+        File outfile = new File(pathName);
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(((ImageView) event.getSource()).snapshot(null,
+                    null), null), "png", outfile);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -251,10 +260,7 @@ public class SpectrumController implements Initializable{
             });
             item2.setOnAction(event2 -> {
                 //Abrir gráfica en otra ventana
-                if (event.getSource() instanceof ImageView)
-                    maximizeScene((ImageView) event.getSource());
-                else
-                    maximizeScene((LineChart) event.getSource());
+                maximizeScene(1);
             });
             item3.setOnAction(event1 -> {
                 File outfile = new File("snapshot.png");
@@ -269,6 +275,63 @@ public class SpectrumController implements Initializable{
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
         }
     }
+
+    private void handleClickWaveFormMax(MouseEvent event) {
+        if (event.getButton() == MouseButton.SECONDARY) {
+            if (WaveFormState == 3) WaveFormState = 0;
+            String[] texts = {"Cambiar a Canal Izquierdo", "Cambiar a Canal Derecho", "Cambiar a Ambos Canales"};
+            final ContextMenu contextMenu = new ContextMenu();
+            item1.setText("Regresar a la vista anterior");
+            item2.setText(texts[0]);
+            item3.setText("Guardar imagen");
+            item1.setOnAction(event1 -> {
+                returnState(1);
+            });
+            item2.setOnAction(event2 -> {
+                //Zoom en la región de interes
+                changeSeries(WaveFormState++);
+            });
+            item3.setOnAction(event1 -> snapshotImage("snapshot.png", event));
+            contextMenu.getItems().addAll(item1, item2, item3);
+            contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
+        }
+    }
+
+    private void handleClickImageMax(MouseEvent event) {
+        if (event.getButton() == MouseButton.SECONDARY) {
+            final ContextMenu contextMenu = new ContextMenu();
+            item1.setText("Regresar a la vista anterior");
+            item2.setText("Zoom en la zona de interés");
+            item3.setText("Guardar imagen");
+            item1.setOnAction(event1 -> {
+                returnState(0);
+            });
+            item2.setOnAction(event1 -> paintSpectZoomed());
+            item3.setOnAction(event1 -> snapshotImage("snapshot.png", event));
+            item4.setOnAction(event1 -> {
+                spectrumImage.setImage(song.getImages().get((channel) ? 0 : 1));
+                channel = !channel;
+            });
+            contextMenu.getItems().addAll(item1, item2, item3, item4);
+            contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
+        }
+    }
+
+    private void returnState(int indexRecovered) {
+        switch (indexRecovered) {
+            case 0:
+                hSpecBox.getChildren().add(0, waveform);
+                spectrumImage.fitWidthProperty().bind(borderPane.widthProperty().divide(2));
+                spectrumImage.fitHeightProperty().bind(hSpecBox.heightProperty());
+                spectrumImage.setOnMouseClicked(event -> handleClickImage(event));
+                break;
+            case 1:
+                hSpecBox.getChildren().add(1, spectrumImage);
+                waveform.setOnMouseClicked(event -> handleClickWaveForm(event));
+                break;
+        }
+    }
+
 
     private void changeSeries(int i) {
         waveform.getData().clear();
@@ -297,15 +360,22 @@ public class SpectrumController implements Initializable{
         waveform.setOnMouseClicked(event -> handleClickWaveForm(event));
     }
 
-    private void maximizeScene(ImageView source) {
-        StageManager stageManager = new StageManager(FXMLScenes.SPECTRUM_MAXIMIZED);
-        stageManager.switchScene(FXMLScenes.SPECTRUM_MAXIMIZED, source);
+    private void maximizeScene(int indexRemoved) {
+        switch (indexRemoved) {
+            case 0:
+                hSpecBox.getChildren().remove(indexRemoved);
+                spectrumImage.fitWidthProperty().bind(borderPane.widthProperty());
+                spectrumImage.fitHeightProperty().bind(hSpecBox.heightProperty());
+                spectrumImage.setOnMouseClicked(event -> handleClickImageMax(event));
+                break;
+            case 1:
+                hSpecBox.getChildren().remove(indexRemoved);
+                waveform.setOnMouseClicked(event -> handleClickWaveFormMax(event));
+                break;
+        }
+
     }
 
-    private void maximizeScene(LineChart source) {
-        StageManager stageManager = new StageManager(FXMLScenes.WAVEFORM_MAXIMIZED);
-        stageManager.switchScene(FXMLScenes.WAVEFORM_MAXIMIZED, source);
-    }
 
     private void initiateProgressDialogs() {
         StageManager stageManager = new StageManager(FXMLScenes.PROGRESS);

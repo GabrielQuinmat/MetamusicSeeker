@@ -83,56 +83,6 @@ public enum FXMLScenes {
         StageStyle getStageStyle() {
             return StageStyle.DECORATED;
         }
-    }, SPECTRUM_MAXIMIZED {
-        @Override
-        String getFXMLName() {
-            return "/fxmls/spectrumMaximizedSpectrum.fxml";
-        }
-
-        @Override
-        Modality getModality() {
-            return Modality.NONE;
-        }
-
-        @Override
-        String getStylesheet() {
-            return "/stylesheets/spectrumStyle.css";
-        }
-
-        @Override
-        public String getTitle() {
-            return "Espectograma Aumentado";
-        }
-
-        @Override
-        StageStyle getStageStyle() {
-            return StageStyle.DECORATED;
-        }
-    }, WAVEFORM_MAXIMIZED {
-        @Override
-        String getFXMLName() {
-            return "/fxmls/spectrumMaximized.fxml";
-        }
-
-        @Override
-        Modality getModality() {
-            return Modality.NONE;
-        }
-
-        @Override
-        String getStylesheet() {
-            return "/stylesheets/spectrumStyle.css";
-        }
-
-        @Override
-        public String getTitle() {
-            return "Forma de Onda Aumentada";
-        }
-
-        @Override
-        StageStyle getStageStyle() {
-            return StageStyle.DECORATED;
-        }
     }, ALERT_DIALOG {
         @Override
         String getFXMLName() {

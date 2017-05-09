@@ -1,18 +1,12 @@
 package managers;
 
 import controllers.AlertDialogController;
-import controllers.SpectrumMaximizedController;
-import controllers.WaveformMaximizedController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.chart.LineChart;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
-import methodclasses.SceneMaster;
 
 import java.io.IOException;
 
@@ -61,49 +55,5 @@ public class StageManager extends Application{
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /*
-    * Se obtiene el Parent del FXML actual, */
-    public void switchScene(FXMLScenes fsceneTo, Node node) {
-        Parent root;
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fsceneTo.getFXMLName()));
-            root = loader.load();
-            SceneMaster.spectrumSceneRoot = node.getParent();
-            WaveformMaximizedController controller;
-            SpectrumMaximizedController controller1;
-            if (loader.getController() instanceof WaveformMaximizedController) {
-                controller = loader.getController();
-                controller.setLineChart((LineChart) node);
-                controller.setBackScene(node.getScene());
-            } else {
-                controller1 = loader.getController();
-                controller1.setImageV((ImageView) node);
-                controller1.setBackScene(node.getScene());
-            }
-            stage = (Stage) node.getScene().getWindow();
-            Scene scene = prepareScene(root);
-            stage.setScene(scene);
-            stage.sizeToScene();
-            stage.centerOnScreen();
-//            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Scene prepareScene(Parent root) {
-        Scene scene = stage.getScene();
-        if (scene == null)
-            scene = new Scene(root);
-        scene.setRoot(root);
-        return scene;
-    }
-
-    public void back(Scene backScene, Scene scene) {
-        stage = (Stage) scene.getWindow();
-        stage.setScene(backScene);
-        stage.show();
     }
 }
