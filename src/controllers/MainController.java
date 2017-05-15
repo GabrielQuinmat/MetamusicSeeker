@@ -154,6 +154,7 @@ public class MainController implements Initializable {
                 fadeInNode(songTextFlow);
                 songPrelude.setFill(Color.CADETBLUE);
                 songPrelude.setText(selectedFile.getPath());
+                songInfoTV.getItems().clear();
                 getMetadata(new Media(selectedFile.toURI().toString()));
                 getAudioInputInfo(AudioSystem.getAudioFileFormat(selectedFile));
                 fadeInNode(songInfoTV);

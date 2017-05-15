@@ -74,7 +74,7 @@ public class WaveSound implements Serializable {
 
     public double[] extractAmplitudeDataFromAudioInputStream(AudioInputStream audioInputStream) throws IOException, UnsupportedAudioFileException {
         format = audioInputStream.getFormat();
-        int MAXSIZE = 54000000;
+        int MAXSIZE = 40000000;
         audioBytes = new byte[((audioInputStream.getFrameLength() * format.getFrameSize()) > MAXSIZE) ? MAXSIZE
                 : (int) (audioInputStream.getFrameLength() * format.getFrameSize())];
         // calculate durations
@@ -98,7 +98,7 @@ public class WaveSound implements Serializable {
         frameSize = format2.getFormat().getFrameSize();
         sampleRate = format2.getFormat().getSampleRate();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int MAXSIZE = 54000000;
+        int MAXSIZE = 40000000;
         byte[] buffer = new byte[4096];
         // calculate durations
         durationMSec = (long) ((format2.getFrameLength() * 1000) / audioInputStream.getFormat().getFrameRate());
