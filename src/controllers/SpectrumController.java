@@ -65,7 +65,7 @@ public class SpectrumController implements Initializable{
     @FXML
     HBox hSpecBox;
     private ObservableList<XYChart.Series<Integer, Double>> amplitudes;
-    private boolean channel = false;
+    private int channelIndex = 0;
 
 
     private void analyze(){
@@ -106,16 +106,17 @@ public class SpectrumController implements Initializable{
                     @Override
                     protected Void call() throws Exception {
                         spectrumImageChart = new SpectrumImageChart();
+                        SpectrumImageChart spectrumImageChart1 = new SpectrumImageChart();
                         Platform.runLater(() -> {
-                            WritableImage image = spectrumImageChart.prepareImage("Espectograma",
+                            WritableImage image = spectrumImageChart.prepareImage("Espectograma Izquierdo",
                                     "Frecuencia (KHz)", "Tiempo (Segundos)"),
-                                    image2 = spectrumImageChart.prepareImage("Espectograma",
+                                    image2 = spectrumImageChart1.prepareImage("Espectograma Derecho",
                                             "Frecuencia (KHz)", "Tiempo (Segundos)");
                             spectrumImage.setImage(image);
                             try {
                                 image = spectrumImageChart.drawSpectrum(image, lCoffs, fourierPerformer.WINDOW,
                                         song.getWaveSound().getFormat().getSampleRate(), (int) song.getWaveSound().getDurationMiliSec());
-                                image2 = spectrumImageChart.drawSpectrum(image2, rCoffs, fourierPerformer.WINDOW,
+                                image2 = spectrumImageChart1.drawSpectrum(image2, rCoffs, fourierPerformer.WINDOW,
                                         song.getWaveSound().getFormat().getSampleRate(), (int) song.getWaveSound().getDurationMiliSec());
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -135,6 +136,7 @@ public class SpectrumController implements Initializable{
             boolean metamusicConclusion = fourierPerformer.analyzeFFT(rCoffs, lCoffs);
             JOptionPane.showMessageDialog(null, song.toString() + " "
                     + ((metamusicConclusion) ? "ES " : "NO ES ") + "Metamúsica");
+            paintSpectZoomed();
             SpectrumImageChart.progress.set(1);
         });
     }
@@ -147,16 +149,21 @@ public class SpectrumController implements Initializable{
                     @Override
                     protected Void call() throws Exception {
                         Platform.runLater(() -> {
-                            WritableImage image = spectrumImageChart.prepareImage("Espectograma", "Frecuencia (Hz)",
+                            SpectrumImageChart spectrumImageChart1 = new SpectrumImageChart();
+                            WritableImage image = spectrumImageChart.prepareImage("Espectograma Izquierdo", "Frecuencia (Hz)",
+                                    "Tiempo (Segundos)"),
+                                    image1 = spectrumImageChart1.prepareImage("Espectograma Derecho", "Frecuencia (Hz)",
                                     "Tiempo (Segundos)");
                             try {
                                 image = spectrumImageChart.drawSpectrumZoomed(image, lCoffs, fourierPerformer.WINDOW,
                                         fourierPerformer.getMaxPosition(), (int) song.getWaveSound().getDurationMiliSec());
+                                image1 = spectrumImageChart1.drawSpectrumZoomed(image1, rCoffs, fourierPerformer.WINDOW,
+                                        fourierPerformer.getMaxPosition(), (int) song.getWaveSound().getDurationMiliSec());
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                            spectrumImage.setImage(image);
                             song.getImages().add(image);
+                            song.getImages().add(image1);
                         });
                         return null;
                     }
@@ -196,8 +203,6 @@ public class SpectrumController implements Initializable{
                         Platform.runLater(() -> {
                             WritableImage image = new WritableImage((int) waveform.getWidth(), (int) waveform.getHeight());
                             waveform.setData(amplitudes);
-                            waveform.snapshot(null, image);
-                            song.getImages().add(image);
                         });
                         return null;
                     }
@@ -213,7 +218,8 @@ public class SpectrumController implements Initializable{
             rewriteMenuText();
             item1.setOnAction(event2 -> {
                 //Zoom en la región de interes
-                paintSpectZoomed();
+                channelIndex = (channelIndex == 0) ? 2 : 3;
+                spectrumImage.setImage(song.getImages().get(channelIndex));
             });
             item2.setOnAction(event2 -> {
                 //Abrir gráfica en otra ventana
@@ -223,8 +229,11 @@ public class SpectrumController implements Initializable{
                 snapshotImage(event);
             });
             item4.setOnAction(event1 -> {
-                spectrumImage.setImage(song.getImages().get((channel) ? 0 : 1));
-                channel = !channel;
+                if (channelIndex < 2)
+                    channelIndex = (channelIndex == 0) ? 1 : 0;
+                else
+                    channelIndex = (channelIndex == 2) ? 3 : 2;
+                spectrumImage.setImage(song.getImages().get(channelIndex));
             });
             contextMenu.getItems().addAll(item1, item2, item3, item4);
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
@@ -311,11 +320,17 @@ public class SpectrumController implements Initializable{
             item1.setOnAction(event1 -> {
                 returnState(0);
             });
-            item2.setOnAction(event1 -> paintSpectZoomed());
+            item2.setOnAction(event1 -> {
+                channelIndex = (channelIndex == 0) ? 2 : 3;
+                spectrumImage.setImage(song.getImages().get(channelIndex));
+            });
             item3.setOnAction(event1 -> snapshotImage(event));
             item4.setOnAction(event1 -> {
-                spectrumImage.setImage(song.getImages().get((channel) ? 0 : 1));
-                channel = !channel;
+                if (channelIndex < 2)
+                    channelIndex = (channelIndex == 0) ? 1 : 0;
+                else
+                    channelIndex = (channelIndex == 2) ? 3 : 2;
+                spectrumImage.setImage(song.getImages().get(channelIndex));
             });
             contextMenu.getItems().addAll(item1, item2, item3, item4);
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
