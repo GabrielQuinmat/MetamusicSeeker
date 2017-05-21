@@ -20,6 +20,7 @@ public class WaveSound implements Serializable {
     private double sampleRate;
     private double frameSize;
     private File wavFile;
+    private int MAXSIZE = 40000000;
 
     public WaveSound(String path) {
         wavFile = new File(path);
@@ -98,7 +99,6 @@ public class WaveSound implements Serializable {
         frameSize = format2.getFormat().getFrameSize();
         sampleRate = format2.getFormat().getSampleRate();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int MAXSIZE = 40000000;
         byte[] buffer = new byte[4096];
         // calculate durations
         durationMSec = (long) ((format2.getFrameLength() * 1000) / audioInputStream.getFormat().getFrameRate());
@@ -126,7 +126,7 @@ public class WaveSound implements Serializable {
 
         audioData = null;
         if (format.getSampleSizeInBits() == 16) {
-            int nlengthInSamples = audioBytes.length / 2;
+            int nlengthInSamples = (audioBytes.length > MAXSIZE) ? MAXSIZE : (audioBytes.length / 2);
             audioData = new double[nlengthInSamples];
             if (format.isBigEndian()) {
                 for (int i = 0; i < nlengthInSamples; i++) {
@@ -146,7 +146,7 @@ public class WaveSound implements Serializable {
                 }
             }
         } else if (format.getSampleSizeInBits() == 8) {
-            int nlengthInSamples = audioBytes.length;
+            int nlengthInSamples = (audioBytes.length > MAXSIZE) ? MAXSIZE : (audioBytes.length);
             audioData = new double[nlengthInSamples];
             if (format.getEncoding().toString().startsWith("PCM_SIGN")) {
                 // PCM_SIGNED

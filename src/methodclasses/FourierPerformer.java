@@ -161,8 +161,11 @@ public class FourierPerformer {
         Iterator<Integer> iterator = mapFreqL.keySet().iterator();
         while (iterator.hasNext()) {
             int n = iterator.next();
-            double dif = Math.abs(dBL[n] - dBR[mapFreqR.get(n)]);
-            if (!mapFreqR.containsKey(n) || (dif) > criteria)
+            if (mapFreqR.containsKey(n)) {
+                double dif = Math.abs(dBL[n] - dBR[mapFreqR.get(n)]);
+                if ((dif) > criteria)
+                    iterator.remove();
+            } else
                 iterator.remove();
         }
         return !mapFreqL.isEmpty();

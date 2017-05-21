@@ -20,6 +20,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import managers.FXMLScenes;
 import managers.StageManager;
@@ -220,7 +221,7 @@ public class SpectrumController implements Initializable{
                 maximizeScene(0);
             });
             item3.setOnAction(event1 -> {
-                snapshotImage("snapshot.png", event);
+                snapshotImage(event);
             });
             item4.setOnAction(event1 -> {
                 spectrumImage.setImage(song.getImages().get((channel) ? 0 : 1));
@@ -238,12 +239,17 @@ public class SpectrumController implements Initializable{
         item4.setText("Cambiar de Canal");
     }
 
-    private void snapshotImage(String pathName, Event event) {
-        File outfile = new File(pathName);
+    private void snapshotImage(Event event) {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Seleccione la Ruta y el Nombre para la Captura de Pantalla");
+        fc.setInitialFileName("snapshot.png");
+        File outfile = fc.showSaveDialog(null);
         try {
             ImageIO.write(SwingFXUtils.fromFXImage(((ImageView) event.getSource()).snapshot(null,
                     null), null), "png", outfile);
+            JOptionPane.showMessageDialog(null, "Se ha guardado el archivo");
         } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Ha ocurrido un error al guardar la captura");
             e.printStackTrace();
         }
     }
@@ -291,7 +297,7 @@ public class SpectrumController implements Initializable{
                 //Zoom en la región de interes
                 changeSeries(WaveFormState++);
             });
-            item3.setOnAction(event1 -> snapshotImage("snapshot.png", event));
+            item3.setOnAction(event1 -> snapshotImage(event));
             contextMenu.getItems().addAll(item1, item2, item3);
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
         }
@@ -307,7 +313,7 @@ public class SpectrumController implements Initializable{
                 returnState(0);
             });
             item2.setOnAction(event1 -> paintSpectZoomed());
-            item3.setOnAction(event1 -> snapshotImage("snapshot.png", event));
+            item3.setOnAction(event1 -> snapshotImage(event));
             item4.setOnAction(event1 -> {
                 spectrumImage.setImage(song.getImages().get((channel) ? 0 : 1));
                 channel = !channel;
