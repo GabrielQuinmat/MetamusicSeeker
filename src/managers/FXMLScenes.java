@@ -33,31 +33,6 @@ public enum FXMLScenes {
         StageStyle getStageStyle() {
             return StageStyle.DECORATED;
         }
-    }, PROGRESS {
-        @Override
-        String getFXMLName() {
-            return "/fxmls/ProgressDialog.fxml";
-        }
-
-        @Override
-        Modality getModality() {
-            return Modality.APPLICATION_MODAL;
-        }
-
-        @Override
-        String getStylesheet() {
-            return "/stylesheets/dialogStyle.css";
-        }
-
-        @Override
-        public String getTitle() {
-            return "";
-        }
-
-        @Override
-        StageStyle getStageStyle() {
-            return StageStyle.UNDECORATED;
-        }
     }, SPECTRUM {
         @Override
         String getFXMLName() {

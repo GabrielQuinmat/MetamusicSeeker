@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.effect.ColorAdjust;
@@ -19,6 +20,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
@@ -28,6 +30,7 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 import managers.FXMLScenes;
 import managers.StageManager;
+import methodclasses.SpectrumImageChart;
 import pojo.MetadataMedia;
 import pojo.Song;
 import stages.Main;
@@ -65,6 +68,12 @@ public class MainController implements Initializable {
     MenuItem closeMI;
     @FXML
     MenuItem saveMI;
+
+    @FXML
+    private VBox mainVBox;
+    @FXML
+    public ProgressBar progressBar;
+
     @FXML
     Button analyzeButton;
     private Song song;
@@ -102,6 +111,7 @@ public class MainController implements Initializable {
 
         analyzeButton.setOnAction(event -> {
             if (song != null) {
+                progressBar.progressProperty().bind(SpectrumImageChart.progress);
                 analyzeButton.setStyle("");
                 colorInNode(analyzeButton);
                 SpectrumController.song = song;

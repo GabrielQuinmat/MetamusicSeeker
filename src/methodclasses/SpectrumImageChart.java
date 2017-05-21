@@ -158,7 +158,6 @@ public class SpectrumImageChart {
         paintFFT(fftCofs, sliceH, sliceV, windowSize / 2, nWindows, maxPower);
         setGridCanvas();
         canvas.snapshot(null, (WritableImage) image);
-        progress.setValue(0.7);
         return (WritableImage) image;
     }
 
@@ -203,16 +202,16 @@ public class SpectrumImageChart {
     private void setAxisNumeration(Image image, double maxF, int milisecs) {
         canvas = new Canvas(image.getWidth(), image.getHeight());
         gc = canvas.getGraphicsContext2D();
-        gc.setFont(Font.font(11));
+        gc.setFont(Font.font(16));
         //Left Marks
         double milisecsPerMark = Math.round(milisecs / HORIZONTAL_MARKS), freqPerMark = Math.round(maxF / VERTICAL_MARKS);
         for (double i = BOX_HEIGTH_END, x = 0; i >= BOX_HEIGTH_INIT; i -= VERTICAL_MARKS_PIXEL, x++) {
-            gc.strokeText(String.format("%,.2f", freqPerMark * x), BOX_WIDTH_INIT - BOX_WIDTH_INIT * 0.35, i);
+            gc.strokeText(String.format("%,.2f", freqPerMark * x), BOX_WIDTH_INIT - BOX_WIDTH_INIT * 0.57, i);
         }
         //        Down MARKS
         for (double j = (int) BOX_WIDTH_INIT, x = 0; j <= BOX_WIDTH_END; j += HORIZONTAL_MARKS_PIXEL, x++) {
             if (x % 2 == 0) {
-                gc.strokeText(String.format("%,.2f", milisecsPerMark * x * .001), j, BOX_HEIGTH_END + (BOX_HEIGTH_INIT * 0.3));
+                gc.strokeText(String.format("%,.2f", milisecsPerMark * x * .001), j, BOX_HEIGTH_END + (BOX_HEIGTH_INIT * 0.4));
             }
         }
     }
@@ -276,7 +275,7 @@ public class SpectrumImageChart {
         gc.setFont(Font.font(30));
         gc.strokeText(title, BOX_WIDTH * 0.6, BOX_HEIGTH_INIT * 0.5);
 
-        gc.setFont(Font.font(18));
+        gc.setFont(Font.font(20));
         gc.strokeText(labelY, BOX_WIDTH * 0.6, BOX_HEIGTH_END + (BOX_HEIGTH_INIT * 0.5));
 
         for (int i = 0; i < labelX.length(); i++) {

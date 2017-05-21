@@ -6,8 +6,7 @@
         <option name="appClass" value="stages.Main" />
         <option name="description" value="" />
         <option name="htmlPlaceholderId" value="" />
-        <option name="nativeBundle" value="all" />
-        <option name="title" value="MetaMusic Seeker" />
+        <option name="title" value="Meta-Music Seeker" />
         <option name="vendor" value="" />
         <option name="version" value="" />
       </options>

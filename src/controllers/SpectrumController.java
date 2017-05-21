@@ -21,9 +21,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import managers.FXMLScenes;
-import managers.StageManager;
 import methodclasses.FourierPerformer;
 import methodclasses.SceneMaster;
 import methodclasses.SpectrumImageChart;
@@ -134,9 +131,11 @@ public class SpectrumController implements Initializable{
         };
         S2.restart();
         S2.setOnSucceeded(event ->{
+            SpectrumImageChart.progress.set(0.9);
             boolean metamusicConclusion = fourierPerformer.analyzeFFT(rCoffs, lCoffs);
             JOptionPane.showMessageDialog(null, song.toString() + " "
                     + ((metamusicConclusion) ? "ES " : "NO ES ") + "Metamúsica");
+            SpectrumImageChart.progress.set(1);
         });
     }
 
@@ -323,6 +322,7 @@ public class SpectrumController implements Initializable{
         }
     }
 
+
     private void returnState(int indexRecovered) {
         switch (indexRecovered) {
             case 0:
@@ -383,14 +383,6 @@ public class SpectrumController implements Initializable{
     }
 
 
-    private void initiateProgressDialogs() {
-        StageManager stageManager = new StageManager(FXMLScenes.PROGRESS);
-        try {
-            stageManager.start(new Stage());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 
 }

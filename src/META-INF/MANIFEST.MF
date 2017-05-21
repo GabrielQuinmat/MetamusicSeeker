@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: Project2_0.jar
-Main-Class: stages.Main
-

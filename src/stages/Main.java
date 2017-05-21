@@ -16,7 +16,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 //        executeCommand();
-        Parent root = FXMLLoader.load(getClass().getResource("../fxmls/mainScene.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/fxmls/mainScene.fxml"));
         primaryStage.setTitle("Meta-Music Seeker");
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/stylesheets/mainStyle.css").toExternalForm());
