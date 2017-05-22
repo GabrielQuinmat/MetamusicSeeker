@@ -1,5 +1,8 @@
 package pojo;
 
+import com.sun.media.sound.WaveFileWriter;
+import javafx.stage.FileChooser;
+
 import javax.sound.sampled.*;
 import java.io.*;
 import java.util.HashMap;
@@ -159,9 +162,7 @@ public class WaveSound implements Serializable {
                     audioData[i] = audioBytes[i] - 128;
                 }
             }
-        }// end of if..else
-        // System.out.println("PCM Returned===============" +
-        // audioData.length);
+        }
         return audioData;
     }
 
@@ -200,6 +201,23 @@ public class WaveSound implements Serializable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public void generateNewSoundFile() throws IOException {
+        // Transform byte array for a monoaudio song.
+        AudioInputStream audioInputStreamOut = AudioSystem.getAudioInputStream(new AudioFormat(format.getEncoding(),
+                format.getSampleRate(), format.getSampleSizeInBits(), 1,
+                (int) (frameSize / format.getChannels()), format.getFrameRate(),
+                format.isBigEndian()), audioInputStream);
+        WaveFileWriter writer = new WaveFileWriter();
+        writer.write(audioInputStreamOut, AudioFileFormat.Type.WAVE, saveFile());
+    }
+
+    private File saveFile() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Seleccione la Ruta y el Nombre para Guardar el Archivo de Audio");
+        File outfile = fc.showSaveDialog(null);
+        return outfile;
     }
 
     public byte[] getAudioBytes() {

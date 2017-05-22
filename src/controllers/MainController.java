@@ -40,9 +40,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -101,11 +99,12 @@ public class MainController implements Initializable {
         });
 
         saveMI.setOnAction(event -> {
-            try {
-                ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("slsi.dat"));
-                out.writeObject(song);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (song != null && song.getFftR() != null) {
+                try {
+                    song.getWaveSound().generateNewSoundFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
