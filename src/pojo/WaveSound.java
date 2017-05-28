@@ -183,26 +183,6 @@ public class WaveSound implements Serializable {
         return channelMap;
     }
 
-    public void DataFormatted(double[] data, String title) {
-        try {
-            PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(
-                    new FileOutputStream(title), "UTF-8"), true);
-            for (int i = 0, c = 0, win = 0; i < data.length; i++, c++, win++) {
-                if (c < 5) {
-                    printWriter.print(i + ": " + String.format("%,.3f ", data[i]) + "      \t");
-                } else {
-                    printWriter.print(i + ": " + String.format("%,.3f ", data[i]));
-                    printWriter.println();
-                    c = -1;
-                }
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void generateNewSoundFile() throws IOException {
         // Transform byte array for a monoaudio song.
         AudioInputStream audioInputStreamOut = AudioSystem.getAudioInputStream(new AudioFormat(format.getEncoding(),

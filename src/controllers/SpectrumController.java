@@ -394,10 +394,5 @@ public class SpectrumController implements Initializable{
                 waveform.setOnMouseClicked(event -> handleClickWaveFormMax(event));
                 break;
         }
-
     }
-
-
-
-
 }
