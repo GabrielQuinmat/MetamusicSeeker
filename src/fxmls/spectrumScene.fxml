@@ -1,29 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.SpectrumController">
+<BorderPane fx:id="borderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="700.0"
+            prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.SpectrumController">
    <center>
-      <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+       <AnchorPane BorderPane.alignment="CENTER">
          <children>
-            <HBox fx:id="hSpecBox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-               <children>
-                   <LineChart fx:id="waveform" createSymbols="false" maxHeight="1.7976931348623157E308"
-                              maxWidth="1.7976931348623157E308" prefHeight="775.0" prefWidth="584.0"
-                              title="Forma de Onda" HBox.hgrow="ALWAYS">
-                    <xAxis>
-                      <NumberAxis side="BOTTOM" />
-                    </xAxis>
-                    <yAxis>
-                      <NumberAxis side="LEFT" />
-                    </yAxis>
-                  </LineChart>
-                  <ImageView fx:id="spectrumImage" fitHeight="400.0" fitWidth="600.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS" />
-               </children>
-            </HBox>
+             <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0"
+                   prefWidth="100.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0"
+                   AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                 <children>
+                     <HBox fx:id="hSpecBox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                         <children>
+                             <LineChart fx:id="waveform" createSymbols="false" maxHeight="1.7976931348623157E308"
+                                        maxWidth="1.7976931348623157E308" prefHeight="775.0" prefWidth="584.0"
+                                        title="Forma de Onda" HBox.hgrow="ALWAYS">
+                                 <xAxis>
+                                     <NumberAxis side="BOTTOM"/>
+                                 </xAxis>
+                                 <yAxis>
+                                     <NumberAxis side="LEFT"/>
+                                 </yAxis>
+                             </LineChart>
+                             <ImageView fx:id="spectrumImage" fitHeight="400.0" fitWidth="600.0" pickOnBounds="true"
+                                        preserveRatio="true" HBox.hgrow="ALWAYS"/>
+                         </children>
+                     </HBox>
+                 </children>
+             </VBox>
          </children>
-      </VBox>
+           <BorderPane.margin>
+               <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+           </BorderPane.margin>
+       </AnchorPane>
    </center>
 </BorderPane>

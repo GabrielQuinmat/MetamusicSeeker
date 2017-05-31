@@ -342,8 +342,9 @@ public class SpectrumController implements Initializable{
         switch (indexRecovered) {
             case 0:
                 hSpecBox.getChildren().add(0, waveform);
+                spectrumImage.setPreserveRatio(false);
                 spectrumImage.fitWidthProperty().bind(borderPane.widthProperty().divide(2));
-                spectrumImage.fitHeightProperty().bind(hSpecBox.heightProperty());
+                spectrumImage.fitHeightProperty().bind(borderPane.heightProperty());
                 spectrumImage.setOnMouseClicked(event -> handleClickImage(event));
                 break;
             case 1:
@@ -375,8 +376,9 @@ public class SpectrumController implements Initializable{
         analyze();
         SceneMaster.imageSpectrum = spectrumImage;
         SceneMaster.waveform = waveform;
+        spectrumImage.setPreserveRatio(false);
         spectrumImage.fitWidthProperty().bind(borderPane.widthProperty().divide(2));
-        spectrumImage.fitHeightProperty().bind(hSpecBox.heightProperty());
+        spectrumImage.fitHeightProperty().bind(borderPane.heightProperty());
         spectrumImage.setOnMouseClicked(event -> handleClickImage(event));
         waveform.setOnMouseClicked(event -> handleClickWaveForm(event));
     }
@@ -385,8 +387,9 @@ public class SpectrumController implements Initializable{
         switch (indexRemoved) {
             case 0:
                 hSpecBox.getChildren().remove(indexRemoved);
+                spectrumImage.setPreserveRatio(false);
                 spectrumImage.fitWidthProperty().bind(borderPane.widthProperty());
-                spectrumImage.fitHeightProperty().bind(hSpecBox.heightProperty());
+                spectrumImage.fitHeightProperty().bind(borderPane.heightProperty());
                 spectrumImage.setOnMouseClicked(event -> handleClickImageMax(event));
                 break;
             case 1:
