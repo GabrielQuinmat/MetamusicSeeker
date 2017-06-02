@@ -247,8 +247,26 @@ public class SpectrumController implements Initializable{
         item4.setText("Cambiar de Canal");
     }
 
+    private void snapshotWave(Event event) {
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Imagen PNG", "*.png"));
+        fc.setTitle("Seleccione la ruta y el nombre para la imagen");
+        fc.setInitialFileName("snapshot.png");
+        File outfile = fc.showSaveDialog(null);
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(((LineChart) event.getSource()).snapshot(null,
+                    null), null), "png", outfile);
+            JOptionPane.showMessageDialog(null, "Captura guardada");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void snapshotImage(Event event) {
         FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Imagen PNG", "*.png"));
         fc.setTitle("Seleccione la Ruta y el Nombre para la Captura de Pantalla");
         fc.setInitialFileName("snapshot.png");
         File outfile = fc.showSaveDialog(null);
@@ -276,15 +294,7 @@ public class SpectrumController implements Initializable{
                 //Abrir gráfica en otra ventana
                 maximizeScene(1);
             });
-            item3.setOnAction(event1 -> {
-                File outfile = new File("snapshot.png");
-                try {
-                    ImageIO.write(SwingFXUtils.fromFXImage(((LineChart) event.getSource()).snapshot(null,
-                            null), null), "png", outfile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+            item3.setOnAction(event1 -> snapshotWave(event));
             contextMenu.getItems().addAll(item1, item2, item3);
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
         }
@@ -305,7 +315,7 @@ public class SpectrumController implements Initializable{
                 //Zoom en la región de interes
                 changeSeries(WaveFormState++);
             });
-            item3.setOnAction(event1 -> snapshotImage(event));
+            item3.setOnAction(event1 -> snapshotWave(event));
             contextMenu.getItems().addAll(item1, item2, item3);
             contextMenu.show(((Node) (event.getSource())), event.getScreenX(), event.getScreenY());
         }
