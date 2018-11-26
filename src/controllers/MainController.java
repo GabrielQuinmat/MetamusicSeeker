@@ -7,13 +7,12 @@ import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
@@ -109,27 +108,39 @@ public class MainController implements Initializable {
         });
 
         analyzeButton.setOnAction(event -> {
-            if (song != null) {
-                progressBar.progressProperty().bind(SpectrumImageChart.progress);
-                analyzeButton.setStyle("");
-                colorInNode(analyzeButton);
-                SpectrumController.song = song;
-                stageManager = new StageManager(FXMLScenes.SPECTRUM);
-                try {
-                    stageManager.start(new Stage());
-                } catch (Exception e) {
-                    e.printStackTrace();
+            Service service = new Service(){
+                @Override
+                protected Task createTask() {
+                    analyzeProcess();
+                    return null;
                 }
-            } else {
-                stageManager = new StageManager(FXMLScenes.ALERT_DIALOG);
-                try {
-                    stageManager.dialogStart(FXMLScenes.ALERT_DIALOG, "No se ha seleccionado un archivo.");
-                } catch (Exception e) {
-
-                }
-            }
+            };
+            service.setOnSucceeded(event1 -> progressBar.setProgress(0));
+            service.restart();
         });
 
+    }
+
+    private void analyzeProcess() {
+        if (song != null) {
+            progressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+            analyzeButton.setStyle("");
+            colorInNode(analyzeButton);
+            SpectrumController.song = song;
+            stageManager = new StageManager(FXMLScenes.SPECTRUM);
+            try {
+                stageManager.start(new Stage());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            stageManager = new StageManager(FXMLScenes.ALERT_DIALOG);
+            try {
+                stageManager.dialogStart(FXMLScenes.ALERT_DIALOG, "No se ha seleccionado un archivo.");
+            } catch (Exception e) {
+
+            }
+        }
     }
 
 

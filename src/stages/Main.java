@@ -26,15 +26,15 @@ public class Main extends Application {
         window.show();
     }
 
-    private boolean executeCommand() {
-        String command = "java -Xmx1g " + System.getProperty("user.dir") + "\\Main.java";
-        try {
-            Process p = Runtime.getRuntime().exec(command);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
+//    private boolean executeCommand() {
+//        String command = "java -Xmx1g " + System.getProperty("user.dir") + "\\Main.java";
+//        try {
+//            Process p = Runtime.getRuntime().exec(command);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return false;
+//    }
 
 
     public static void main(String[] args) {
